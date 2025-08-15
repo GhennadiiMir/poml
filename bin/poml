@@ -1,0 +1,80 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'json'
+require_relative '../lib/poml'
+
+options = {
+  format: 'dict',
+  context: {},
+  chat: true,
+  stylesheet: nil
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: poml [options] file_or_markup"
+
+  opts.on("-f", "--format FORMAT", "Output format (raw, dict, openai_chat, langchain, pydantic)") do |f|
+    options[:format] = f
+  end
+
+  opts.on("-c", "--context JSON", "Context variables as JSON") do |c|
+    options[:context] = JSON.parse(c)
+  end
+
+  opts.on("--no-chat", "Disable chat mode") do
+    options[:chat] = false
+  end
+
+  opts.on("-s", "--stylesheet JSON", "Stylesheet as JSON") do |s|
+    options[:stylesheet] = s
+  end
+
+  opts.on("-o", "--output FILE", "Output file") do |o|
+    options[:output_file] = o
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+  opts.on("-v", "--version", "Show version") do
+    puts Poml::VERSION
+    exit
+  end
+end.parse!
+
+if ARGV.empty?
+  puts "Error: Please provide a POML file or markup string"
+  exit 1
+end
+
+markup = ARGV[0]
+
+begin
+  result = Poml.process(
+    markup: markup,
+    context: options[:context],
+    stylesheet: options[:stylesheet],
+    chat: options[:chat],
+    output_file: options[:output_file],
+    format: options[:format]
+  )
+
+  if options[:output_file]
+    puts "Output written to #{options[:output_file]}"
+  else
+    case options[:format]
+    when 'dict', 'langchain', 'pydantic'
+      puts JSON.pretty_generate(result)
+    when 'openai_chat'
+      puts JSON.pretty_generate(result)
+    else
+      puts result
+    end
+  end
+rescue => e
+  puts "Error: #{e.message}"
+  exit 1
+end

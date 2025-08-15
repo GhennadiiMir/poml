@@ -1,0 +1,17 @@
+Be brief and clear in your responses{
+  "table": {
+    "syntax": "csv",
+    "writerOptions": {
+        "csvHeader": false,
+        "csvSeparator": " "
+    }
+  },
+  "input": {
+    "captionEnding": "colon-newline",
+    "captionStyle": "plain"
+  },
+  "output": {
+    "captionEnding": "colon-newline",
+    "captionStyle": "plain"
+  }
+}

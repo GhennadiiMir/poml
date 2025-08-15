@@ -1,0 +1,37 @@
+# Built gems
+*.gem
+
+# Development/Debug files
+debug_*.rb
+demo_*.rb
+test_*.rb
+!test/test_*.rb
+!test/run_all_tests.rb
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Log files
+*.log
+
+# Coverage reports
+coverage/
+
+# Bundler
+vendor/bundle/
+.bundle/
+
+# Ruby version managers
+.ruby-version
+.rvmrc
+
+# OS generated files
+Thumbs.db

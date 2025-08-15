@@ -1,0 +1,26 @@
+PATH
+  remote: .
+  specs:
+    poml (0.0.1)
+      rexml (~> 3.2)
+      rubyzip (~> 2.3)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.25.5)
+    rake (13.3.0)
+    rexml (3.4.1)
+    rubyzip (2.4.1)
+
+PLATFORMS
+  arm64-darwin-21
+  ruby
+
+DEPENDENCIES
+  minitest
+  poml!
+  rake
+
+BUNDLED WITH
+   2.6.5

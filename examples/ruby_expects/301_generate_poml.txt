@@ -1,0 +1,17 @@
+// PromptLibrary.jsx
+
+/* Create a blog post. The prompt contains very specific instructions around output format, styles, and what to include in the content. */
+
+
+/* Conduct in-depth research with AI, such as tackling academic papers, business analyses, or large investigative projects. */
+
+
+/* Test the ability of an LLM to perform a complex reasoning task -- ARC-AGI. The data is in `arc_agi_data.json`.
+ */
+
+
+/* Summarize a report, such as a research paper or a business report. */
+
+
+/* Write a entertaining story that is engaging, imaginative and captivating for the audience. */
+
