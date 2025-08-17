@@ -15,7 +15,7 @@ This is a **Ruby port** of the original [POML library](https://github.com/micros
 For comprehensive documentation, tutorials, and examples, please refer to the **original POML library documentation**:
 
 - 📚 **Main Repository**: <https://github.com/microsoft/poml>
-- 📖 **Documentation**: Complete language reference and guides
+- 📖 **Documentation**: [Complete language reference and guides](https://microsoft.github.io/poml/latest/)
 - 💡 **Examples**: Extensive collection of POML examples
 - 🎯 **Use Cases**: Real-world applications and patterns
 
