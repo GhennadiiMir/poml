@@ -6,8 +6,14 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Ghennadii Mirosnicenco"]
   spec.email         = ["linkator7@gmail.com"]
 
-  spec.summary       = "POML interpreter"
-  spec.description   = "poml is a Ruby gem that implements POML"
+  spec.summary       = "Ruby implementation of POML (Prompt Oriented Markup Language)"
+  spec.description   = <<~DESC
+    POML is a Ruby gem that implements POML (Prompt Oriented Markup Language), 
+    a markup language for structured prompt engineering. This is a Ruby port of 
+    the original Microsoft POML library, providing comprehensive tools for creating, 
+    processing, and rendering structured prompts with support for multiple output 
+    formats including OpenAI Chat, LangChain, and Pydantic.
+  DESC
   spec.homepage      = "https://github.com/GhennadiiMir/poml"
   spec.license       = "MIT"
   spec.required_ruby_version = ">= 2.7.0"
@@ -28,7 +34,10 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["changelog_uri"] = spec.homepage
+  spec.metadata["documentation_uri"] = "#{spec.homepage}/blob/main/TUTORIAL.md"
+  spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
+  spec.metadata["changelog_uri"] = "#{spec.homepage}/releases"
+  spec.metadata["rubygems_mfa_required"] = "true"
 
   # Runtime dependencies
   spec.add_dependency "rexml", "~> 3.2"
