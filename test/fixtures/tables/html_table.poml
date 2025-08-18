@@ -1,0 +1,6 @@
+<table>
+  <tr><td>Product</td><td>Price</td><td>Stock</td></tr>
+  <tr><td>Laptop</td><td>$999</td><td>5</td></tr>
+  <tr><td>Mouse</td><td>$25</td><td>50</td></tr>
+  <tr><td>Keyboard</td><td>$75</td><td>20</td></tr>
+</table>

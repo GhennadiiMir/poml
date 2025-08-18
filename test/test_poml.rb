@@ -373,4 +373,242 @@ class PomlTest < Minitest::Test
     assert_equal true, result_chat['metadata']['chat']
     assert_equal false, result_no_chat['metadata']['chat']
   end
+
+  # Test advanced template features implemented
+  def test_for_loop_with_arrays
+    # Test numeric arrays
+    markup = '<for variable="i" items="[1,2,3]">Item: {{i}} </for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Item: 1'
+    assert_includes result, 'Item: 2'
+    assert_includes result, 'Item: 3'
+    
+    # Test string arrays
+    markup = '<for variable="item" items="[\"apple\", \"banana\"]">Fruit: {{item}} </for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Fruit: apple'
+    assert_includes result, 'Fruit: banana'
+  end
+
+  def test_for_loop_with_index
+    markup = '<for variable="item" items="[\"a\",\"b\",\"c\"]">{{loop.index}}: {{item}} </for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, '1: a'
+    assert_includes result, '2: b'
+    assert_includes result, '3: c'
+  end
+
+  def test_conditional_comparisons
+    # Test numeric comparisons
+    markup = '<if condition="5 > 3">Greater than works</if>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Greater than works'
+    
+    markup = '<if condition="2 < 1">Should not show</if>'
+    result = Poml.process(markup: markup, format: 'raw')
+    refute_includes result, 'Should not show'
+    
+    # Test equality
+    markup = '<if condition="1 == 1">Equal works</if>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Equal works'
+    
+    # Test string equality
+    markup = '<if condition="\"hello\" == \"hello\"">String equal works</if>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'String equal works'
+  end
+
+  def test_nested_templates
+    markup = '<for variable="item" items="[1,2,3,4,5]"><if condition="{{item}} > 3">Item {{item}} is greater than 3. </if></for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Item 4 is greater than 3'
+    assert_includes result, 'Item 5 is greater than 3'
+    refute_includes result, 'Item 1 is greater than 3'
+    refute_includes result, 'Item 2 is greater than 3'
+  end
+
+  def test_chat_components
+    markup = '<ai>Hello from AI</ai><human>Hello from human</human><system>Be helpful</system>'
+    
+    # Test OpenAI chat format
+    result = Poml.process(markup: markup, format: 'openai_chat')
+    assert_kind_of Array, result
+    assert_equal 3, result.length
+    
+    assert_equal 'assistant', result[0]['role']
+    assert_equal 'Hello from AI', result[0]['content']
+    
+    assert_equal 'user', result[1]['role'] 
+    assert_equal 'Hello from human', result[1]['content']
+    
+    assert_equal 'system', result[2]['role']
+    assert_equal 'Be helpful', result[2]['content']
+    
+    # Test that raw format shows empty content (messages are structured)
+    result = Poml.process(markup: markup, format: 'raw')
+    refute_includes result, 'Hello from AI'
+  end
+
+  def test_meta_component_with_custom_metadata
+    markup = '<meta title="Test Document" description="A test document" author="Test Author">Content</meta>'
+    result = Poml.process(markup: markup, format: 'dict')
+    
+    assert_equal 'Test Document', result['metadata']['title']
+    assert_equal 'A test document', result['metadata']['description']
+    assert_equal 'Test Author', result['metadata']['author']
+  end
+
+  def test_table_component_with_json_data
+    markup = '<table records="[{\"name\": \"John\", \"age\": 30}, {\"name\": \"Jane\", \"age\": 25}]">Table</table>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should render as markdown table
+    assert_includes result, '| name | age |'
+    assert_includes result, 'John'
+    assert_includes result, '30'
+    assert_includes result, 'Jane'
+    assert_includes result, '25'
+  end
+
+  def test_table_component_with_html_markup
+    markup = '<table><tr><td>Name</td><td>Age</td></tr><tr><td>John</td><td>30</td></tr></table>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should render as markdown table
+    assert_includes result, '| Column 1 | Column 2 |'
+    assert_includes result, 'Name'
+    assert_includes result, 'Age'
+    assert_includes result, 'John'
+    assert_includes result, '30'
+  end
+
+  def test_utility_components
+    # Test folder component
+    markup = '<folder src="lib" maxDepth="1">Folder content</folder>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'poml.rb'
+    
+    # Test tree component with items
+    markup = '<tree items="[{\"name\": \"root\", \"children\": [{\"name\": \"child1\"}, {\"name\": \"child2\"}]}]">Tree</tree>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'root'
+    assert_includes result, 'child1'
+    assert_includes result, 'child2'
+    
+    # Test conversation component with messages
+    markup = '<conversation messages="[{\"role\": \"user\", \"content\": \"Hi\"}, {\"role\": \"assistant\", \"content\": \"Hello\"}]">Conversation</conversation>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Human:'
+    assert_includes result, 'Hi'
+    assert_includes result, 'Hello'
+  end
+
+  def test_formatting_components
+    # Test bold, italic, underline
+    markup = '<b>bold</b> <i>italic</i> <u>underline</u>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, '**bold**'
+    assert_includes result, '*italic*'
+    assert_includes result, '__underline__'
+    
+    # Test nested formatting
+    markup = '<b>Bold with <i>italic</i> inside</b>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, '**Bold with *italic* inside**'
+  end
+
+  def test_list_components
+    markup = '<list><item>First item</item><item>Second item</item></list>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, '- First item'
+    assert_includes result, '- Second item'
+  end
+
+  def test_example_components
+    markup = '<examples><example><input>Hello</input><output>Hi there!</output></example></examples>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Examples'
+    assert_includes result, 'Hello'
+    assert_includes result, 'Hi there!'
+  end
+
+  def test_json_attribute_parsing
+    # Test that JSON arrays are parsed correctly in attributes
+    markup = '<for variable="x" items="[10, 20, 30]">Value: {{x}} </for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Value: 10'
+    assert_includes result, 'Value: 20'
+    assert_includes result, 'Value: 30'
+  end
+
+  def test_complex_template_expressions
+    # Test template variable substitution in conditions
+    markup = '<for variable="num" items="[1,5,10]"><if condition="{{num}} >= 5">{{num}} is at least 5. </if></for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, '5 is at least 5'
+    assert_includes result, '10 is at least 5'
+    refute_includes result, '1 is at least 5'
+  end
+
+  def test_error_handling_and_edge_cases
+    # Test unknown components are handled gracefully
+    markup = '<unknowncomponent>Content</unknowncomponent>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'unknowncomponent'
+    assert_includes result, 'Content'
+    
+    # Test empty attributes
+    markup = '<for variable="" items="">Empty</for>'
+    result = Poml.process(markup: markup, format: 'raw')
+    # Should not crash and return something reasonable
+    assert_kind_of String, result
+    
+    # Test malformed JSON in attributes
+    markup = '<tree items="[malformed">Tree</tree>'
+    result = Poml.process(markup: markup, format: 'raw')
+    # Should not crash
+    assert_kind_of String, result
+  end
+
+  def test_variable_substitution_in_meta
+    markup = '<meta variables="{\"name\": \"Alice\"}"><p>Hello {{name}}!</p></meta>'
+    result = Poml.process(markup: markup, format: 'raw')
+    assert_includes result, 'Hello Alice!'
+  end
+
+  def test_multiple_output_formats_consistency
+    markup = '<ai>Test message</ai><human>User message</human>'
+    
+    # Test raw format
+    raw_result = Poml.process(markup: markup, format: 'raw')
+    assert_kind_of String, raw_result
+    
+    # Test dict format
+    dict_result = Poml.process(markup: markup, format: 'dict')
+    assert_kind_of Hash, dict_result
+    assert dict_result.key?('content')
+    assert dict_result.key?('metadata')
+    
+    # Test openai_chat format
+    chat_result = Poml.process(markup: markup, format: 'openai_chat')
+    assert_kind_of Array, chat_result
+    assert_equal 2, chat_result.length
+    assert_equal 'assistant', chat_result[0]['role']
+    assert_equal 'user', chat_result[1]['role']
+  end
+
+  def test_performance_with_large_loops
+    # Test performance doesn't degrade significantly with larger loops
+    markup = '<for variable="i" items="' + (1..100).to_a.to_s + '">{{i}} </for>'
+    
+    start_time = Time.now
+    result = Poml.process(markup: markup, format: 'raw')
+    end_time = Time.now
+    
+    # Should complete within reasonable time (less than 1 second)
+    assert (end_time - start_time) < 1.0, "Large loop took too long: #{end_time - start_time} seconds"
+    assert_includes result, '1 '
+    assert_includes result, '100 '
+  end
 end

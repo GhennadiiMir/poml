@@ -22,6 +22,9 @@ module Poml
         load_table_data(src, parser)
       elsif records_attr
         parse_records_attribute(records_attr)
+      elsif @element.children.any? { |child| child.tag_name == :tr }
+        # Handle HTML-style table markup
+        parse_html_table_children
       else
         { records: [], columns: [] }
       end
@@ -145,6 +148,39 @@ module Poml
       end
       
       { records: records.is_a?(Array) ? records : [records], columns: columns }
+    end
+    
+    def parse_html_table_children
+      records = []
+      columns = []
+      
+      # Extract rows from tr children
+      @element.children.each do |child|
+        next unless child.tag_name == :tr
+        
+        row_data = {}
+        child.children.each_with_index do |cell, index|
+          next unless cell.tag_name == :td || cell.tag_name == :th
+          
+          # Get cell content (render children to get text)
+          cell_content = cell.children.map do |cell_child|
+            Components.render_element(cell_child, @context)
+          end.join('').strip
+          
+          # Use cell content as content, index as key for now
+          column_key = "col_#{index}"
+          row_data[column_key] = cell_content
+          
+          # Track columns
+          unless columns.any? { |col| col[:field] == column_key }
+            columns << { field: column_key, header: "Column #{index + 1}" }
+          end
+        end
+        
+        records << row_data unless row_data.empty?
+      end
+      
+      { records: records, columns: columns }
     end
     
     def apply_selection(data, selected_columns, selected_records, max_records, max_columns)

@@ -1,0 +1,40 @@
+<meta title="POML Demo" description="Comprehensive example of POML features" variables='{"user_name": "Alice", "numbers": [1,2,3,4,5]}'>
+
+<role>You are a helpful AI assistant demonstrating POML capabilities</role>
+
+<task>
+Show various POML features including:
+- <b>Formatting</b> with <i>nested</i> <u>emphasis</u>
+- Template variables and loops
+- Conditional content
+- Tables and lists
+- Chat interactions
+</task>
+
+<h>Dynamic Content Generation</h>
+
+Hello {{user_name}}! Here are some examples:
+
+<for variable="num" items="{{numbers}}">
+  <if condition="{{num}} > 3">
+    Number {{num}} is greater than 3.
+  </if>
+</for>
+
+<h>Data Tables</h>
+<table records='[{"feature": "Templates", "status": "✅"}, {"feature": "Chat", "status": "✅"}, {"feature": "Tables", "status": "✅"}]'>Feature table</table>
+
+<h>Examples</h>
+<examples>
+  <example>
+    <input>How do I use POML?</input>
+    <output>POML is easy! Just use XML-like tags with powerful template features.</output>
+  </example>
+</examples>
+
+<h>Chat Interaction</h>
+<system>Be helpful and demonstrate POML features</system>
+<human>What can POML do?</human>
+<ai>POML can handle templates, data, formatting, and generate structured output for AI applications!</ai>
+
+</meta>

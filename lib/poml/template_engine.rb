@@ -80,6 +80,14 @@ module Poml
     def evaluate_complex_expression(expression)
       # Handle more complex expressions like array literals, object access, etc.
       
+      # Try to parse as JSON first (for arrays and objects)
+      begin
+        require 'json'
+        return JSON.parse(expression)
+      rescue JSON::ParserError
+        # Not valid JSON, continue with other parsing
+      end
+      
       # Array literals like ['apple', 'banana', 'cherry']
       if expression =~ /^\[(.+)\]$/
         array_content = $1

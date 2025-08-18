@@ -1,0 +1,1 @@
+<for variable="item" items='[1,2,3,4,5]'><if condition="{{item}} > 2">Item {{item}} is greater than 2. </if></for>

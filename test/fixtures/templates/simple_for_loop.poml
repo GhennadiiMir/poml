@@ -1,0 +1,2 @@
+<for variable="name" items='["Alice", "Bob", "Charlie"]'>Hello {{name}}! {{loop.index}}: {{name}}
+</for>

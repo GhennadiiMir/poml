@@ -1,0 +1,1 @@
+<for variable="item" items='["a","b","c"]'>{{loop.index}}: {{item}} </for>

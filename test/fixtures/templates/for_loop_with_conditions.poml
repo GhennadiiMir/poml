@@ -1,0 +1,2 @@
+<for variable="item" items='[1,2,3,4,5]'>Item {{item}}: <if condition="{{item}} > 3">Greater than 3</if><if condition="{{item}} <= 3">Less than or equal to 3</if>
+</for>

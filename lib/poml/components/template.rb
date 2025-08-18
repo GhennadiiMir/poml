@@ -24,13 +24,43 @@ module Poml
       # Handle both raw variable names and template expressions
       condition = condition.strip
       
+      # First, substitute any template variables in the condition
+      substituted_condition = @context.template_engine.substitute(condition)
+      
       # If it's a template expression, it may have been pre-substituted
       # If condition looks like a substituted value, try to parse it
-      case condition
+      case substituted_condition
       when 'true'
         true
       when 'false'
         false
+      when /^(.+?)\s*(>|<|>=|<=|==|!=)\s*(.+)$/
+        # Handle comparison operators
+        left_operand = $1.strip
+        operator = $2.strip
+        right_operand = $3.strip
+        
+        # Convert operands to appropriate types
+        left_value = convert_operand(left_operand)
+        right_value = convert_operand(right_operand)
+        
+        # Perform comparison
+        case operator
+        when '>'
+          left_value > right_value
+        when '<'
+          left_value < right_value
+        when '>='
+          left_value >= right_value
+        when '<='
+          left_value <= right_value
+        when '=='
+          left_value == right_value
+        when '!='
+          left_value != right_value
+        else
+          false
+        end
       when /^{{(.+)}}$/
         # Extract the variable name and evaluate it directly
         var_name = $1.strip
@@ -38,8 +68,19 @@ module Poml
         convert_to_boolean(result)
       else
         # Try to evaluate as a variable name
-        result = @context.template_engine.evaluate_attribute_expression(condition)
+        result = @context.template_engine.evaluate_attribute_expression(substituted_condition)
         convert_to_boolean(result)
+      end
+    end
+    
+    def convert_operand(operand)
+      # Try to convert to number if possible, otherwise keep as string
+      if operand =~ /^-?\d+$/
+        operand.to_i
+      elsif operand =~ /^-?\d*\.\d+$/
+        operand.to_f
+      else
+        operand
       end
     end
     

@@ -68,7 +68,7 @@ class PomlNewComponentsTest < Minitest::Test
     
     # Check system message
     system_msg = chat_result.find { |msg| msg['role'] == 'system' }
-    assert_not_nil system_msg
+    refute_nil system_msg
     assert_includes system_msg['content'], 'helpful assistant'
     
     # Check user message
