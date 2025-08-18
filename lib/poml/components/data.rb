@@ -327,6 +327,229 @@ module Poml
     end
   end
 
+  # Object component for displaying structured data
+  class ObjectComponent < Component
+    require 'json'
+    require 'yaml'
+    
+    def render
+      apply_stylesheet
+      
+      data = get_attribute('data')
+      syntax = get_attribute('syntax', 'json')
+      
+      return '' unless data
+      
+      if xml_mode?
+        render_as_xml('obj', serialize_data(data, syntax))
+      else
+        serialize_data(data, syntax)
+      end
+    end
+    
+    private
+    
+    def serialize_data(data, syntax)
+      case syntax.downcase
+      when 'json'
+        JSON.pretty_generate(data)
+      when 'yaml', 'yml'
+        YAML.dump(data)
+      when 'xml'
+        # Simple XML serialization for basic data structures
+        serialize_to_xml(data)
+      else
+        data.to_s
+      end
+    rescue => e
+      "[Error serializing data: #{e.message}]"
+    end
+    
+    def serialize_to_xml(data, root_name = 'data', indent = 0)
+      spaces = '  ' * indent
+      
+      case data
+      when Hash
+        result = ["#{spaces}<#{root_name}>"]
+        data.each do |key, value|
+          result << serialize_to_xml(value, key, indent + 1)
+        end
+        result << "#{spaces}</#{root_name}>"
+        result.join("\n")
+      when Array
+        result = ["#{spaces}<#{root_name}>"]
+        data.each_with_index do |item, index|
+          result << serialize_to_xml(item, "item#{index}", indent + 1)
+        end
+        result << "#{spaces}</#{root_name}>"
+        result.join("\n")
+      else
+        "#{spaces}<#{root_name}>#{escape_xml(data)}</#{root_name}>"
+      end
+    end
+    
+    def escape_xml(text)
+      text.to_s.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    end
+  end
+
+  # Webpage component for displaying web content
+  class WebpageComponent < Component
+    def render
+      apply_stylesheet
+      
+      url = get_attribute('url')
+      src = get_attribute('src')
+      buffer = get_attribute('buffer')
+      base64 = get_attribute('base64')
+      extract_text = get_attribute('extractText', false)
+      selector = get_attribute('selector', 'body')
+      syntax = get_attribute('syntax', 'text')
+      
+      content = if url
+        fetch_webpage_content(url, selector, extract_text)
+      elsif src
+        read_html_file(src, selector, extract_text)
+      elsif buffer
+        process_html_content(buffer, selector, extract_text)
+      elsif base64
+        require 'base64'
+        decoded = Base64.decode64(base64)
+        process_html_content(decoded, selector, extract_text)
+      else
+        '[Webpage: no source specified]'
+      end
+      
+      if xml_mode?
+        render_as_xml('webpage', content)
+      else
+        content
+      end
+    end
+    
+    private
+    
+    def fetch_webpage_content(url, selector, extract_text)
+      begin
+        require 'net/http'
+        require 'uri'
+        
+        uri = URI.parse(url)
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true if uri.scheme == 'https'
+        http.read_timeout = 10
+        
+        request = Net::HTTP::Get.new(uri.request_uri)
+        request['User-Agent'] = 'POML/1.0'
+        
+        response = http.request(request)
+        
+        if response.code == '200'
+          process_html_content(response.body, selector, extract_text)
+        else
+          "[Webpage: HTTP #{response.code} error fetching #{url}]"
+        end
+      rescue => e
+        "[Webpage: Error fetching #{url}: #{e.message}]"
+      end
+    end
+    
+    def read_html_file(file_path, selector, extract_text)
+      begin
+        # Resolve relative paths
+        full_path = if file_path.start_with?('/')
+          file_path
+        else
+          base_path = @context.source_path ? File.dirname(@context.source_path) : Dir.pwd
+          File.join(base_path, file_path)
+        end
+        
+        unless File.exist?(full_path)
+          return "[Webpage: File not found: #{file_path}]"
+        end
+        
+        html_content = File.read(full_path)
+        process_html_content(html_content, selector, extract_text)
+      rescue => e
+        "[Webpage: Error reading file #{file_path}: #{e.message}]"
+      end
+    end
+    
+    def process_html_content(html_content, selector, extract_text)
+      begin
+        require 'nokogiri'
+        
+        doc = Nokogiri::HTML(html_content)
+        
+        # Apply selector if specified
+        if selector && selector != 'body'
+          selected = doc.css(selector).first
+          return "[Webpage: Selector '#{selector}' not found]" unless selected
+          doc = selected
+        end
+        
+        if extract_text
+          # Extract plain text
+          doc.text.strip.gsub(/\s+/, ' ')
+        else
+          # Convert HTML to structured POML-like format
+          convert_html_to_poml(doc)
+        end
+      rescue LoadError
+        # Nokogiri not available, do simple text extraction
+        if extract_text
+          html_content.gsub(/<[^>]*>/, ' ').gsub(/\s+/, ' ').strip
+        else
+          html_content
+        end
+      rescue => e
+        "[Webpage: Error processing HTML: #{e.message}]"
+      end
+    end
+    
+    def convert_html_to_poml(element)
+      case element.name.downcase
+      when 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+        level = element.name[1].to_i
+        "#{('#' * level)} #{element.text.strip}\n\n"
+      when 'p'
+        "#{element.text.strip}\n\n"
+      when 'ul', 'ol'
+        items = element.css('li').map { |li| "- #{li.text.strip}" }
+        "#{items.join("\n")}\n\n"
+      when 'strong', 'b'
+        "**#{element.text.strip}**"
+      when 'em', 'i'
+        "*#{element.text.strip}*"
+      when 'code'
+        "`#{element.text.strip}`"
+      when 'pre'
+        "```\n#{element.text.strip}\n```\n\n"
+      when 'blockquote'
+        lines = element.text.strip.split("\n")
+        quoted = lines.map { |line| "> #{line}" }
+        "#{quoted.join("\n")}\n\n"
+      when 'a'
+        href = element['href']
+        text = element.text.strip
+        href ? "[#{text}](#{href})" : text
+      when 'img'
+        alt = element['alt'] || 'Image'
+        src = element['src']
+        src ? "![#{alt}](#{src})" : "[#{alt}]"
+      else
+        # For other elements, process children recursively
+        if element.children.any?
+          element.children.map { |child| 
+            child.text? ? child.text : convert_html_to_poml(child) 
+          }.join('')
+        else
+          element.text.strip
+        end
+      end
+    end
+  end
+
   # Image component
   class ImageComponent < Component
     def render

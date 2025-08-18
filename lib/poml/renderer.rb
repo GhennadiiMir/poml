@@ -42,13 +42,24 @@ module Poml
     end
 
     def render_dict(elements)
+      # Render content first to allow meta components to modify context
+      content = render_raw(elements)
+      
+      # Gather metadata after rendering
+      metadata = {
+        'chat' => @context.chat,
+        'stylesheet' => @context.stylesheet,
+        'variables' => @context.variables
+      }
+      
+      # Include additional metadata if present
+      metadata['response_schema'] = @context.response_schema if @context.response_schema
+      metadata['tools'] = @context.tools if @context.tools && !@context.tools.empty?
+      metadata['runtime_parameters'] = @context.runtime_parameters if @context.runtime_parameters && !@context.runtime_parameters.empty?
+      
       {
-        'content' => render_raw(elements),
-        'metadata' => {
-          'chat' => @context.chat,
-          'stylesheet' => @context.stylesheet,
-          'variables' => @context.variables
-        }
+        'content' => content,
+        'metadata' => metadata
       }
     end
 

@@ -105,12 +105,27 @@ module Poml
             attrs[name.downcase] = value.to_s
           end
           
-          elements << Element.new(
-            tag_name: child.name.downcase.to_sym,
-            attributes: attrs,
-            content: extract_text_content(child),
-            children: parse_element(child)
-          )
+          # Check for conditional and loop attributes before creating element
+          if_condition = attrs['if']
+          for_attribute = attrs['for']
+          
+          # Handle conditional rendering
+          if if_condition && !evaluate_if_condition(if_condition)
+            next # Skip this element
+          end
+          
+          # Handle for loop rendering
+          if for_attribute
+            loop_elements = render_for_loop(child, attrs, for_attribute)
+            elements.concat(loop_elements)
+          else
+            elements << Element.new(
+              tag_name: child.name.downcase.to_sym,
+              attributes: attrs,
+              content: extract_text_content(child),
+              children: parse_element(child)
+            )
+          end
         end
       end
 
@@ -147,6 +162,70 @@ module Poml
         rescue => e
           # Silently fail JSON parsing errors
         end
+      end
+    end
+    
+    def evaluate_if_condition(condition)
+      value = @template_engine.evaluate_attribute_expression(condition)
+      !!value
+    end
+    
+    def render_for_loop(xml_element, attrs, for_attribute)
+      # Parse for attribute like "i in [1,2,3]" or "item in items"
+      if for_attribute =~ /^(\w+)\s+in\s+(.+)$/
+        loop_var = $1
+        list_expr = $2.strip
+        
+        # Evaluate the list expression
+        list = @template_engine.evaluate_attribute_expression(list_expr)
+        return [] unless list.is_a?(Array)
+        
+        # Create elements for each item in the list
+        elements = []
+        list.each_with_index do |item, index|
+          # Create loop context
+          old_loop_var = @context.variables[loop_var]
+          old_loop_context = @context.variables['loop']
+          
+          @context.variables[loop_var] = item
+          @context.variables['loop'] = {
+            'index' => index,
+            'length' => list.length,
+            'first' => index == 0,
+            'last' => index == list.length - 1
+          }
+          
+          # Remove for attribute and process element normally
+          loop_attrs = attrs.dup
+          loop_attrs.delete('for')
+          
+          element = Element.new(
+            tag_name: xml_element.name.downcase.to_sym,
+            attributes: loop_attrs,
+            content: extract_text_content(xml_element),
+            children: parse_element(xml_element)
+          )
+          
+          elements << element
+          
+          # Restore previous context
+          if old_loop_var
+            @context.variables[loop_var] = old_loop_var
+          else
+            @context.variables.delete(loop_var)
+          end
+          
+          if old_loop_context
+            @context.variables['loop'] = old_loop_context
+          else
+            @context.variables.delete('loop')
+          end
+        end
+        
+        elements
+      else
+        # Invalid for syntax, return empty
+        []
       end
     end
   end

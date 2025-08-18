@@ -16,7 +16,8 @@ module Poml
 
     def apply_stylesheet
       # Apply stylesheet rules to the element
-      style_rules = @context.stylesheet[@element.tag_name.to_s] || {}
+      stylesheet = @context.respond_to?(:stylesheet) ? @context.stylesheet : {}
+      style_rules = stylesheet[@element.tag_name.to_s] || {}
       style_rules.each do |attr, value|
         @element.attributes[attr] ||= value
       end
@@ -24,7 +25,7 @@ module Poml
       # Apply class-based styles
       class_name = @element.attributes['classname'] || @element.attributes['className']
       if class_name
-        class_rules = @context.stylesheet[".#{class_name}"] || {}
+        class_rules = stylesheet[".#{class_name}"] || {}
         class_rules.each do |attr, value|
           @element.attributes[attr] ||= value
         end
@@ -32,7 +33,11 @@ module Poml
     end
 
     def xml_mode?
-      @context.determine_syntax(@element) == 'xml'
+      if @context.respond_to?(:determine_syntax)
+        @context.determine_syntax(@element) == 'xml'
+      else
+        false
+      end
     end
 
     def render_as_xml(tag_name, content = nil, attributes = {})
@@ -102,8 +107,9 @@ module Poml
       component_name = self.class.name.split('::').last.gsub('Component', '').downcase
       
       # Check for text transformation in stylesheet - first try component-specific, then "cp" (for captioned paragraph inheritance)
-      transform = @context.stylesheet.dig(component_name, 'captionTextTransform') ||
-                  @context.stylesheet.dig('cp', 'captionTextTransform')
+      stylesheet = @context.respond_to?(:stylesheet) ? @context.stylesheet : {}
+      transform = stylesheet.dig(component_name, 'captionTextTransform') ||
+                  stylesheet.dig('cp', 'captionTextTransform')
       
       case transform
       when 'upper'
