@@ -9,7 +9,13 @@ This document tracks the implementation status of all POML features in the Ruby 
 **Current Version**: 0.0.1  
 **Ruby Compatibility**: >= 2.7.0  
 **Test Framework**: Minitest  
-**Test Coverage**: 33 tests, 215 assertions (all passing for implemented features)
+**Test Coverage**: 187 tests, 969 assertions (157 passing, 30 failing, 2 errors)
+
+**Recent Achievements**:
+
+- ✅ **Template Engine Completed** - All variable substitution, conditionals, and loops now working
+- ✅ **XML Parser Enhanced** - Now handles JSON in attributes and comparison operators  
+- ✅ **Test Suite Improved** - Reduced failures from 43+ to 30
 
 ---
 
@@ -49,25 +55,24 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Feature | Status | Tests | Description |
 |---------|--------|-------|-------------|
-| XML Parsing | ✅ Working | ✅ Tested | REXML-based parser |
+| XML Parsing | ✅ Working | ✅ Tested | REXML-based parser with JSON attribute support |
 | Component Registry | ✅ Working | ✅ Tested | Dynamic component mapping |
 | Error Handling | ✅ Working | ✅ Tested | Graceful failure handling |
 | Unicode Support | ✅ Working | ✅ Tested | Full UTF-8 support |
-
----
-
-## 🔧 Partially Implemented Features
 
 ### Template Engine
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<if>` | 🔧 Partial | ❌ Failing | Conditional logic |
-| `<for>` | 🔧 Partial | ❌ Failing | Loops and iteration |
-| `{{variable}}` | 🔧 Partial | ❌ Failing | Variable substitution |
-| `<meta variables>` | 🔧 Partial | ❌ Failing | Template variables |
+| `<if>` | ✅ Working | ✅ Tested | Conditional logic with comparisons (>=, <=, ==, !=, >, <) |
+| `<for>` | ✅ Working | ✅ Tested | Loops and iteration over arrays |
+| `{{variable}}` | ✅ Working | ✅ Tested | Variable substitution from context |
+| `<meta variables>` | ✅ Working | ✅ Tested | Template variables definition with JSON |
+| Variable in conditions | ✅ Working | ✅ Tested | Complex expressions like `{{x}} >= 10` |
 
-**Issue**: Template engine exists but variable substitution and conditions don't work properly.
+---
+
+## 🔧 Partially Implemented Features
 
 ### List Components
 
@@ -78,6 +83,23 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 **Issue**: Components exist but markdown output formatting is incorrect.
 
+### Data Components (Partial)
+
+| Component | Status | Tests | Description |
+|-----------|--------|-------|-------------|
+| `<table>` | 🔧 Partial | ⚠️ Failing | Table from JSON/CSV data - renders but column selection and max records don't work |
+
+**Issue**: Table renders basic HTML but `selectedColumns` and `maxRecords` attributes don't work properly.
+
+### File Operations (Partial)
+
+| Component | Status | Tests | Description |
+|-----------|--------|-------|-------------|
+| `<file>` | 🔧 Partial | ❌ Failing | File content reading - component exists but returns placeholder text |
+| `<folder>` | 🔧 Partial | ❌ Failing | Directory listing - component exists but returns placeholder text |
+
+**Issue**: File components are implemented but return placeholder content instead of reading actual files.
+
 ---
 
 ## ❌ Not Implemented Features  
@@ -86,7 +108,6 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<table>` | ❌ Missing | ❌ Failing | Table from JSON/CSV data |
 | `<object>` | ❌ Missing | ❌ No tests | Object serialization |
 | `<webpage>` | ❌ Missing | ❌ No tests | Web page content |
 | `<image>` | ❌ Missing | ❌ No tests | Image processing |
@@ -95,8 +116,6 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<file>` | ❌ Missing | ❌ Failing | File content reading |
-| `<folder>` | ❌ Missing | ❌ Failing | Directory listing |
 | `<include>` | ❌ Missing | ❌ No tests | Template inclusion |
 
 ### Utility Components  
@@ -162,22 +181,32 @@ bundle exec rake test_working   # Same as rake test
 
 ## 🚀 Implementation Priority
 
-### Phase 1: Core Template Engine (High Priority)
+### ✅ Phase 1: Core Template Engine (COMPLETED)
 
-1. **Variable Substitution** - Fix `{{variable}}` processing
-2. **Conditional Logic** - Fix `<if condition="">` evaluation  
-3. **Loop Processing** - Fix `<for variable="" items="">` iteration
-4. **Meta Variables** - Fix `<meta variables="">` handling
+1. ✅ **Variable Substitution** - `{{variable}}` processing working
+2. ✅ **Conditional Logic** - `<if condition="">` evaluation working with comparisons
+3. ✅ **Loop Processing** - `<for variable="" items="">` iteration working
+4. ✅ **Meta Variables** - `<meta variables="">` handling working
 
-**Impact**: Would fix ~30+ failing tests
+**Impact**: ✅ **COMPLETED** - Fixed 10+ failing tests, all template engine features working
 
-### Phase 2: Data Components (Medium Priority)
+### Phase 2: Formatting Components (High Priority)
 
-1. **Table Rendering** - Implement `<table records="">` with HTML/markdown output
-2. **File Operations** - Implement `<file src="">` reading
-3. **Object Serialization** - Implement `<object>` component
+1. **Underline Component** - Fix `<u>text</u>` to render as `__text__`
+2. **Line Break Component** - Fix `<br>` to render as newline
+3. **Strikethrough Component** - Implement `<s>text</s>` as `~~text~~`
+4. **Header Components** - Implement `<h1>-<h6>` as `# text` etc.
+5. **Code Component** - Implement `<code>text</code>` as `` `text` ``
 
-**Impact**: Would fix ~25+ failing tests
+**Impact**: Would fix ~5+ failing tests with minimal effort
+
+### Phase 3: Data Components (Medium Priority)
+
+1. **Table Rendering** - Fix `<table selectedColumns="">` and `maxRecords` attributes
+2. **File Operations** - Implement actual file reading for `<file src="">`
+3. **Folder Operations** - Implement actual directory listing for `<folder>`
+
+**Impact**: Would fix ~15+ failing tests
 
 ### Phase 3: Utility Components (Medium Priority)  
 

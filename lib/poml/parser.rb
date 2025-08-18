@@ -32,6 +32,9 @@ module Poml
       # Handle escape characters
       content = unescape_poml(content)
       
+      # Pre-process to handle JSON in attributes (convert \" to &quot; inside attribute values)
+      content = preprocess_json_attributes(content)
+      
       # Remove XML comments but preserve surrounding whitespace
       content = content.gsub(/(\s*)<!--.*?-->(\s*)/m) do |match|
         before_space = $1
@@ -227,6 +230,17 @@ module Poml
         # Invalid for syntax, return empty
         []
       end
+    end
+    
+    def preprocess_json_attributes(content)
+      # Convert problematic characters in attribute values to make them valid XML
+      content = content.gsub(/\\"/, '&quot;')  # Handle JSON quotes
+      
+      # Handle comparison operators in attribute values
+      content = content.gsub(/(\w+\s*=\s*"[^"]*?)(<)([^"]*?")/m, '\1&lt;\3')
+      content = content.gsub(/(\w+\s*=\s*"[^"]*?)(>)([^"]*?")/m, '\1&gt;\3')
+      
+      content
     end
   end
 end

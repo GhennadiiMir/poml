@@ -12,7 +12,18 @@ module Poml
         handle_general_meta
       end
       
-      # Meta components don't produce output
+      # If meta has children and variables are set, render children with variable substitution
+      if @element.children.any? && get_attribute('variables')
+        child_content = @element.children.map do |child|
+          # Render the child element
+          rendered_child = Components.render_element(child, @context)
+          # Apply template substitution to the rendered content
+          @context.template_engine.substitute(rendered_child)
+        end.join('')
+        return child_content
+      end
+      
+      # Meta components don't produce output by default
       ''
     end
     
@@ -32,6 +43,12 @@ module Poml
     end
     
     def handle_general_meta
+      # Handle template variables
+      variables_attr = get_attribute('variables')
+      if variables_attr
+        handle_variables(variables_attr)
+      end
+      
       # Handle general metadata attributes
       %w[title description author keywords].each do |attr|
         value = get_attribute(attr)
@@ -192,6 +209,22 @@ module Poml
       end
       
       0
+    end
+    
+    def handle_variables(variables_attr)
+      # Parse variables JSON and add to context
+      begin
+        variables = JSON.parse(variables_attr)
+        if variables.is_a?(Hash)
+          # Merge variables into context
+          variables.each do |key, value|
+            @context.variables[key] = value
+          end
+        end
+      rescue JSON::ParserError => e
+        # Invalid JSON, ignore silently or log error
+        puts "Warning: Invalid JSON in meta variables: #{e.message}" if ENV['POML_DEBUG']
+      end
     end
     
     def apply_component_control(components_attr)

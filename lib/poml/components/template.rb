@@ -34,7 +34,7 @@ module Poml
         true
       when 'false'
         false
-      when /^(.+?)\s*(>|<|>=|<=|==|!=)\s*(.+)$/
+      when /^(.+?)\s*(>=|<=|==|!=|>|<)\s*(.+)$/
         # Handle comparison operators
         left_operand = $1.strip
         operator = $2.strip
@@ -74,13 +74,16 @@ module Poml
     end
     
     def convert_operand(operand)
+      # First substitute any template variables
+      substituted = @context.template_engine.substitute(operand)
+      
       # Try to convert to number if possible, otherwise keep as string
-      if operand =~ /^-?\d+$/
-        operand.to_i
-      elsif operand =~ /^-?\d*\.\d+$/
-        operand.to_f
+      if substituted =~ /^-?\d+$/
+        substituted.to_i
+      elsif substituted =~ /^-?\d*\.\d+$/
+        substituted.to_f
       else
-        operand
+        substituted
       end
     end
     

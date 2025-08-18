@@ -21,6 +21,10 @@ For comprehensive documentation, tutorials, and examples, please refer to the **
 
 The original documentation is an excellent resource for learning POML concepts, syntax, and best practices that apply to this Ruby implementation as well.
 
+## Implementation status
+
+Please refer to [ROADMAP.md](https://github.com/GhennadiiMir/poml/blob/main/ROADMAP.md) for understanding which features are already implemented.
+
 ## Installation
 
 ```bash
