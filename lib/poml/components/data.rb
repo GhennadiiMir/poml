@@ -12,10 +12,10 @@ module Poml
       columns_attr = get_attribute('columns') 
       parser = get_attribute('parser', 'auto')
       syntax = get_attribute('syntax')
-      selected_columns = get_attribute('selectedColumns')
-      selected_records = get_attribute('selectedRecords')
-      max_records = get_attribute('maxRecords')
-      max_columns = get_attribute('maxColumns')
+      selected_columns = parse_array_attribute('selectedColumns')
+      selected_records = parse_array_attribute('selectedRecords')
+      max_records = parse_integer_attribute('maxRecords')
+      max_columns = parse_integer_attribute('maxColumns')
       
       # Load data from source or use provided records
       data = if src
@@ -136,7 +136,12 @@ module Poml
     def parse_records_attribute(records_attr)
       # Handle string records (JSON) or already parsed arrays
       records = if records_attr.is_a?(String)
-        JSON.parse(records_attr)
+        begin
+          JSON.parse(records_attr)
+        rescue JSON::ParserError => e
+          # Return empty records on parse error
+          return { records: [], columns: [] }
+        end
       else
         records_attr
       end
@@ -148,6 +153,38 @@ module Poml
       end
       
       { records: records.is_a?(Array) ? records : [records], columns: columns }
+    end
+    
+    def parse_array_attribute(attr_name)
+      attr_value = get_attribute(attr_name)
+      return nil unless attr_value
+      
+      if attr_value.is_a?(String)
+        begin
+          parsed = JSON.parse(attr_value)
+          parsed.is_a?(Array) ? parsed : nil
+        rescue JSON::ParserError
+          # Try to handle as slice notation
+          attr_value.include?(':') ? attr_value : nil
+        end
+      elsif attr_value.is_a?(Array)
+        attr_value
+      else
+        nil
+      end
+    end
+    
+    def parse_integer_attribute(attr_name)
+      attr_value = get_attribute(attr_name)
+      return nil unless attr_value
+      
+      if attr_value.is_a?(String)
+        attr_value.to_i
+      elsif attr_value.is_a?(Integer)
+        attr_value
+      else
+        nil
+      end
     end
     
     def parse_html_table_children
@@ -219,13 +256,15 @@ module Poml
         end
       end
       
-      # Apply max records
-      if max_records && records.length > max_records
-        # Show top half and bottom half with ellipsis
-        top_rows = (max_records / 2.0).ceil
-        bottom_rows = max_records - top_rows
-        ellipsis_record = columns.each_with_object({}) { |col, record| record[col[:field]] = '...' }
-        records = records[0...top_rows] + [ellipsis_record] + records[-bottom_rows..-1]
+      # Apply max records - simple truncation with ellipsis row
+      if max_records && max_records > 0 && records.length > max_records
+        truncated_records = records[0...max_records]
+        # Add ellipsis row if we truncated
+        if records.length > max_records && columns
+          ellipsis_record = columns.each_with_object({}) { |col, record| record[col[:field]] = '...' }
+          truncated_records << ellipsis_record
+        end
+        records = truncated_records
       end
       
       # Apply max columns

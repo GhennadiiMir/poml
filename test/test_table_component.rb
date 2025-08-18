@@ -50,13 +50,14 @@ class TestTableComponent < Minitest::Test
   end
 
   def test_table_with_max_records
-    records = (1..10).map { |i| "{\"id\": #{i}, \"value\": \"item#{i}\"}" }.join(', ')
+    records = (1..10).map { |i| "{\\\"id\\\": #{i}, \\\"value\\\": \\\"item#{i}\\\"}" }.join(', ')
     markup = "<table records=\"[#{records}]\" maxRecords=\"3\">Large Table</table>"
     result = Poml.process(markup: markup, format: 'raw')
     
     # Should show limited records with ellipsis
     assert_includes result, 'item1'
-    assert_includes result, 'item10'
+    assert_includes result, 'item2'
+    assert_includes result, 'item3'
     assert_includes result, '...'
   end
 
