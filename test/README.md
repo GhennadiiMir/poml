@@ -7,7 +7,7 @@ The POML Ruby gem includes comprehensive test coverage to ensure reliability and
 ### Main Test Suite (`test/test_poml.rb`)
 
 - **Basic functionality tests** - Core gem operations
-- **Output format tests** - All 5 output formats (raw, dict, openai_chat, langchain, pydantic)
+- **Output format tests** - Available output formats (raw, dict, openai_chat)
 - **Template variable tests** - Context substitution and templating
 - **Component tests** - Complex markup with lists, hints, paragraphs
 - **Stylesheet tests** - Custom styling and formatting
@@ -16,14 +16,20 @@ The POML Ruby gem includes comprehensive test coverage to ensure reliability and
 - **Integration pattern tests** - Common usage patterns
 - **Performance tests** - Basic performance validation
 
-### Tutorial Examples Test Suite (`test/test_tutorial_examples.rb`)
+### Additional Test Files
 
-- **All tutorial examples verification** - Every code example from TUTORIAL.md
-- **Format-specific examples** - Detailed testing of each output format
-- **Template patterns** - Dynamic content creation patterns
-- **Integration examples** - Rails/Sinatra service patterns
-- **Best practices** - Template organization and validation patterns
-- **Real-world scenarios** - Practical usage patterns
+- **`test_basic_functionality.rb`** - Core formatting and chat components
+- **`test_template_engine.rb`** - Template variables, loops, conditions
+- **`test_formatting_components.rb`** - Text formatting components
+- **`test_chat_components.rb`** - Chat message components
+- **`test_table_component.rb`** - Table rendering from JSON/CSV
+- **`test_file_components.rb`** - File reading operations
+- **`test_utility_components.rb`** - Utility components (folder, tree, conversation)
+- **`test_meta_component.rb`** - Metadata handling
+- **`test_error_handling.rb`** - Error scenarios
+- **`test_new_components.rb`** - New/experimental components
+- **`test_implemented_features.rb`** - Currently working features
+- **`test_real_implementation.rb`** - Real-world scenarios
 
 ## Test Framework
 
@@ -39,7 +45,7 @@ This project uses **Minitest**, Ruby's built-in testing framework, following sta
 
 ## Running Tests
 
-The test suite uses Minitest and can be run in several ways:
+The test suite uses Minitest and can be run in several ways. Use `bundle exec` to avoid gem version conflicts:
 
 ### Run All Tests (Recommended)
 
@@ -47,8 +53,8 @@ The test suite uses Minitest and can be run in several ways:
 # Let Minitest discover and run all tests
 bundle exec ruby -I lib test/run_all_tests.rb
 
-# Alternative: use rake test (equivalent)
-bundle exec rake test
+# Alternative: use specific test runner
+bundle exec ruby test/run_tests.rb
 ```
 
 ### Run Individual Test Files
@@ -57,11 +63,14 @@ bundle exec rake test
 # Main functionality tests
 bundle exec ruby -I lib test/test_poml.rb
 
-# Tutorial examples validation
-bundle exec ruby -I lib test/test_tutorial_examples.rb
+# Template engine tests
+bundle exec ruby -I lib test/test_template_engine.rb
 
-# Specific debug/development tests
-bundle exec ruby -I lib test/debug_comments.rb
+# Basic functionality tests
+bundle exec ruby -I lib test/test_basic_functionality.rb
+
+# Formatting components tests
+bundle exec ruby -I lib test/test_formatting_components.rb
 ```
 
 ### Using Minitest's Built-in Options
@@ -81,180 +90,186 @@ bundle exec ruby -I lib test/run_all_tests.rb --seed 12345
 
 The test suite covers:
 
-✅ **All output formats** - Comprehensive testing of each format's behavior  
+✅ **Available output formats** - Comprehensive testing of implemented formats (raw, dict, openai_chat)  
 ✅ **Template variables** - Context substitution and dynamic content  
 ✅ **Error handling** - Proper error catching and user-friendly messages  
 ✅ **File operations** - Input from files, output to files  
 ✅ **Component rendering** - All POML components and their combinations  
 ✅ **Integration patterns** - Real-world usage scenarios  
 ✅ **Performance** - Basic performance validation  
-✅ **Tutorial examples** - Every code example from documentation works  
+✅ **Documentation examples** - Code examples from documentation work  
 
 ## Test Statistics
 
-- **Main test suite**: 17 tests, 122+ assertions
-- **Tutorial examples**: 14 tests, 90+ assertions  
-- **Total**: 31 tests, 212+ assertions
-- **Coverage**: All major functionality and tutorial examples
+Current test suite status (see [ROADMAP.md](../ROADMAP.md) for detailed breakdown):
+
+- **Passing tests**: 157 tests passing
+- **Failing tests**: 30 tests failing  
+- **Error tests**: 2 tests with errors
+- **Total coverage**: 187 tests, 969 assertions
+- **Implementation progress**: Core template engine and basic components working
+
+## Simple Test Execution
+
+For basic testing (note: may have gem conflicts, prefer bundle exec):
+
+```bash
+# Basic test without bundle exec (may have version conflicts)
+ruby -I lib test/test_poml.rb
+
+# Recommended approach with bundle exec
+bundle exec ruby -I lib test/test_poml.rb
+```
+
+## Development Testing
+
+The test suite includes debug scripts in the `test/debug/` directory for development purposes.
+
+### Debug Script Organization Rule
+
+**All debug and development scripts should be placed in the `test/debug/` directory.**
+
+Do not create debug files in the main `test/` directory. This keeps:
+
+- Main test files clean and focused on actual testing
+- Debug utilities organized and easy to find  
+- Clear separation between production tests and development tools
+
+### Debug Script Categories
+
+#### Component Debugging
+
+- `test_chat_debug.rb` - Debug chat component rendering with verbose output
+- `test_meta_debug.rb` - Debug meta component processing and schema handling
+- `test_render_debug.rb` - Debug the overall rendering pipeline
+- `test_debug_for.rb` - Debug for component with detailed substitution logging
+- `test_for_debug.rb` - Debug for loop children creation and processing
+- `test_child_context.rb` - Debug child context variable access and inheritance
+- `debug_components.rb` - Debug component registration and basic rendering
+- `debug_meta_flow.rb` - Debug meta component processing flow
+
+#### Template Engine Debugging
+
+- `test_debug.rb` - General template evaluation debugging
+- `test_templates.rb` - Test template engine with variable substitution
+- `debug_template.rb` - Debug template processing
+- `debug_template2.rb` - Additional template debugging
+- `debug_for_iterations.rb` - Debug for loop iteration details
+- `debug_if.rb` - Debug conditional logic processing
+- `debug_var_condition.rb` - Debug variable conditions in templates
+
+#### Parser and XML Debugging
+
+- `debug_parse.rb` - Debug POML parsing logic
+- `debug_markup.rb` - Debug markup processing
+- `debug_xml.rb` - Debug XML parsing
+- `debug_xml2.rb` - Additional XML debugging
+- `debug_xml_less_than.rb` - Debug XML less-than operator handling
+- `debug_preprocess.rb` - Debug preprocessing steps
+
+#### Feature Testing and Analysis
+
+- `test_arrays.rb` - Debug array variable evaluation in templates
+- `test_implementation.rb` - Test current formatting component implementations
+- `debug_assertion.rb` - Debug assertion failures
+- `debug_failing_test.rb` - Debug specific failing tests
+- `debug_fixture.rb` - Debug test fixture handling
+- `debug_spacing.rb` - Debug whitespace and spacing issues
+- `debug_substring.rb` - Debug string manipulation
+- `debug_convert_operand.rb` - Debug operand conversion logic
+
+### Running Debug Scripts
+
+Debug scripts can be run individually for debugging specific components:
+
+```bash
+# Debug template evaluation
+bundle exec ruby -I lib test/debug/test_debug.rb
+
+# Debug chat components  
+bundle exec ruby -I lib test/debug/test_chat_debug.rb
+
+# Debug for loops
+bundle exec ruby -I lib test/debug/test_debug_for.rb
+
+# Debug XML parsing
+bundle exec ruby -I lib test/debug/debug_xml.rb
+
+# Test current implementations
+bundle exec ruby -I lib test/debug/test_implementation.rb
+
+# Debug specific failing tests
+bundle exec ruby -I lib test/debug/debug_failing_test.rb
+```
+
+### Purpose of Debug Scripts
+
+These debug scripts help developers:
+
+- Understand component behavior during development
+- Trace template variable substitution step-by-step
+- Debug parsing and rendering issues with verbose output
+- Test specific component implementations in isolation
+- Analyze assertion failures and test issues
+- Investigate XML parsing and preprocessing problems
+
+**Note**: These are development tools, not part of the main test suite.
 
 ## Continuous Testing
 
 These tests ensure that:
 
-1. All documentation examples work correctly
-2. The gem maintains compatibility with the original POML specification
+1. Core POML functionality works correctly
+2. The gem maintains compatibility with the original POML specification  
 3. New features don't break existing functionality
 4. Integration patterns work in real applications
 5. Performance remains acceptable
 
-```bash
-ruby -Ilib test/test_poml.rb
-```
-
-### `compatibility_checker.rb`
-
-**Main compatibility test suite** - compares Ruby gem output with Python package expected outputs.
-
-#### Features
-
-- ✅ Tests all examples against Python package expectations
-- 🔍 Identifies missing features vs. implementation bugs
-- 📊 Provides detailed progress reports
-- 🎯 Shows compatibility percentage
-- 💡 Suggests next development steps
-- 🎨 Color-coded output for easy reading
-
-#### Usage
-
-```bash
-# Run all compatibility tests
-ruby -Ilib test/compatibility_checker.rb
-
-# Run with minitest
-ruby -Ilib -r minitest/autorun test/compatibility_checker.rb
-
-# Run via rake (if configured)
-rake test
-```
-
-#### Output Interpretation
-
-- **🟢 Passed**: Ruby gem output matches Python package exactly
-- **🔴 Failed**: Ruby gem processes the file but output differs (formatting/logic issues)
-- **🟡 Not Implemented**: Missing core features (document import, image handling, etc.)
-- **💥 Errors**: Ruby gem crashes or fails to process
-
-### `generate_ruby_expects.rb`
-
-Utility to generate current Ruby gem outputs for debugging and comparison.
-
-#### Usage
-
-```bash
-# Generate all Ruby outputs
-ruby test/generate_ruby_expects.rb
-
-# View help
-ruby test/generate_ruby_expects.rb --help
-```
-
-#### Generated Files
-
-- Saves to `examples/ruby_expects/`
-- Compare with `examples/expects/` (Python outputs)
-- Useful for manual inspection and debugging
-
-## Test Data
-
-The tests use the examples in `examples/` directory:
-
-- `*.poml` files: POML source files
-- `expects/*.txt`: Expected outputs from Python package
-- `ruby_expects/*.txt`: Current Ruby gem outputs (generated)
-
-## Example Test Output
-
-```
-🔍 Running POML Ruby Gem Compatibility Tests
-Testing 10 examples against Python package expectations
-
-📋 Testing: 101_explain_character
-  ⚠️  NOT IMPLEMENTED
-  Missing features: Document import, Image handling, System messages
-
-📋 Testing: 102_render_xml
-  ✅ PASSED
-
-📋 Testing: 103_word_todos
-  ❌ FAILED
-  Differences found:
-    • Missing section: system
-    • Line 1: expected '===== system =====', got 'Role: You are a helpful assistant'
-
-================================================================================
-📊 POML Ruby Gem Compatibility Test Summary
-================================================================================
-✅ Passed: 2/10
-❌ Failed: 3/10
-⚠️  Not Implemented: 4/10
-💥 Errors: 1/10
-
-📈 Implementation Progress: 90% (9/10 features attempted)
-🎯 Compatibility Rate: 20% (2/10 fully compatible)
-
-💡 Next Steps for Development:
-  • Focus on implementing: Document import, Image handling, System messages
-  • Fix critical errors in: 201_orders_qa
-  • Debug output formatting issues in: 103_word_todos, 104_financial_analysis
-```
-
-## Development Workflow
-
-1. **Run compatibility tests** to see current state:
-
-   ```bash
-   ruby -Ilib test/compatibility_checker.rb
-   ```
-
-2. **Identify highest-impact missing features** from the report
-
-3. **Implement features** in the Ruby gem
-
-4. **Generate Ruby outputs** to debug:
-
-   ```bash
-   ruby test/generate_ruby_expects.rb
-   ```
-
-5. **Compare outputs manually**:
-
-   ```bash
-   diff examples/expects/101_explain_character.txt examples/ruby_expects/101_explain_character.txt
-   ```
-
-6. **Re-run tests** to verify improvements
-
-## Debugging Tips
-
-- **Missing features**: Check the "Not Implemented" list for core features to add
-- **Format differences**: Look at actual vs expected output for formatting issues
-- **Parser errors**: Check if POML syntax parsing is working correctly
-- **Component support**: Verify that POML components (role, task, etc.) are implemented
-
 ## Adding New Tests
 
-To add tests for new examples:
+To add tests for new features:
 
-1. Add `.poml` file to `examples/`
-2. Generate expected output with Python package
-3. Add to `examples/expects/`
-4. Tests will automatically pick up new files
+### Production Tests
 
-## Integration with CI/CD
+1. Create test file in `test/` directory following `test_*.rb` naming convention
+2. Include `TestHelper` module for common utilities
+3. Add tests to appropriate test runner files
+4. Update this documentation
 
-These tests are designed to track implementation progress over time. Consider:
+### Debug Scripts
 
-- Running in CI to prevent regressions
-- Tracking compatibility percentage over time
-- Failing builds when compatibility drops
-- Using for release readiness assessment
+1. **Always create debug files in `test/debug/` directory** following these naming conventions:
+   - `debug_*.rb` for specific debugging utilities
+   - `test_*.rb` for debug test scripts
+2. Add descriptive comments explaining the debug purpose
+3. Update `test/debug/README.md` with the new script description
+4. Follow the categorization (Component, Template Engine, Parser, Feature Testing)
+
+### File Organization Rules
+
+- **`test/`** - Production test files only (`test_*.rb`)
+- **`test/debug/`** - All debug and development scripts  
+- **`test/fixtures/`** - Test data and fixture files
+- **Never mix debug scripts with production tests**
+
+## Integration with Development
+
+The test suite is designed to support development workflow:
+
+- Run tests frequently during development
+- Use debug scripts to trace specific issues
+- Check ROADMAP.md for current implementation status
+- Focus on failing tests for next implementation priorities
+
+### Reorganization Complete
+
+**All debug scripts have been consolidated into `test/debug/` directory.**
+
+This reorganization provides:
+
+- ✅ Clean separation between production tests and debug utilities
+- ✅ Easy discovery of debug tools by category
+- ✅ Consistent file organization following Ruby conventions
+- ✅ Clear documentation of debug script purposes and usage
+
+**Going forward**: Always place debug and development scripts in `test/debug/` directory.
