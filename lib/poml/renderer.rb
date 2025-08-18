@@ -52,6 +52,9 @@ module Poml
         'variables' => @context.variables
       }
       
+      # Include custom metadata (title, description, etc.)
+      metadata.merge!(@context.custom_metadata) if @context.custom_metadata && !@context.custom_metadata.empty?
+      
       # Include additional metadata if present
       metadata['response_schema'] = @context.response_schema if @context.response_schema
       metadata['tools'] = @context.tools if @context.tools && !@context.tools.empty?
@@ -64,8 +67,13 @@ module Poml
     end
 
     def render_openai_chat(elements)
+      # First render to collect structured messages
       content = render_raw(elements)
-      if @context.chat
+      
+      # Use structured messages if available
+      if @context.respond_to?(:chat_messages) && !@context.chat_messages.empty?
+        @context.chat_messages
+      elsif @context.chat
         parse_chat_messages(content)
       else
         [{ 'role' => 'user', 'content' => content }]

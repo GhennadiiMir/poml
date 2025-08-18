@@ -6,7 +6,7 @@ module Poml
   class Context
     attr_accessor :variables, :stylesheet, :chat, :texts, :source_path, :syntax, :header_level
     attr_accessor :response_schema, :tools, :runtime_parameters, :disabled_components
-    attr_accessor :template_engine
+    attr_accessor :template_engine, :chat_messages, :custom_metadata
 
     def initialize(variables: {}, stylesheet: nil, chat: true, syntax: nil)
       @variables = variables || {}
@@ -21,6 +21,8 @@ module Poml
       @runtime_parameters = {}
       @disabled_components = Set.new
       @template_engine = TemplateEngine.new(self)
+      @chat_messages = [] # Track structured chat messages
+      @custom_metadata = {} # Track general metadata like title, description etc.
     end
 
     def xml_mode?
@@ -61,6 +63,8 @@ module Poml
       child.tools = @tools.dup
       child.runtime_parameters = @runtime_parameters.dup
       child.disabled_components = @disabled_components.dup
+      child.chat_messages = @chat_messages # Share the same array reference
+      child.custom_metadata = @custom_metadata # Share the same hash reference
       child
     end
 

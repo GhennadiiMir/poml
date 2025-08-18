@@ -6,6 +6,16 @@ module Poml
       
       content = @element.content.empty? ? render_children : @element.content
       
+      # Add to structured chat messages if context supports it
+      if @context.respond_to?(:chat_messages)
+        @context.chat_messages << {
+          'role' => 'assistant',
+          'content' => content
+        }
+        # Return empty for raw format to avoid duplication
+        return ''
+      end
+      
       if xml_mode?
         render_as_xml('ai-msg', content, { speaker: 'ai' })
       else
@@ -21,6 +31,16 @@ module Poml
       
       content = @element.content.empty? ? render_children : @element.content
       
+      # Add to structured chat messages if context supports it
+      if @context.respond_to?(:chat_messages)
+        @context.chat_messages << {
+          'role' => 'user',
+          'content' => content
+        }
+        # Return empty for raw format to avoid duplication
+        return ''
+      end
+      
       if xml_mode?
         render_as_xml('user-msg', content, { speaker: 'human' })
       else
@@ -35,6 +55,16 @@ module Poml
       apply_stylesheet
       
       content = @element.content.empty? ? render_children : @element.content
+      
+      # Add to structured chat messages if context supports it
+      if @context.respond_to?(:chat_messages)
+        @context.chat_messages << {
+          'role' => 'system',
+          'content' => content
+        }
+        # Return empty for raw format to avoid duplication
+        return ''
+      end
       
       if xml_mode?
         render_as_xml('system-msg', content, { speaker: 'system' })
@@ -69,7 +99,18 @@ module Poml
     def render
       apply_stylesheet
       
-      messages = get_attribute('messages', [])
+      messages_attr = get_attribute('messages')
+      messages = if messages_attr.is_a?(String)
+        begin
+          require 'json'
+          JSON.parse(messages_attr)
+        rescue JSON::ParserError
+          []
+        end
+      else
+        messages_attr || []
+      end
+      
       selected_messages = get_attribute('selectedMessages')
       
       # Apply message selection if specified
@@ -345,7 +386,18 @@ module Poml
     def render
       apply_stylesheet
       
-      items = get_attribute('items', [])
+      items_attr = get_attribute('items')
+      items = if items_attr.is_a?(String)
+        begin
+          require 'json'
+          JSON.parse(items_attr)
+        rescue JSON::ParserError
+          []
+        end
+      else
+        items_attr || []
+      end
+      
       show_content = get_attribute('showContent', false)
       syntax = get_attribute('syntax', 'text')
       

@@ -98,13 +98,22 @@ module Poml
     # Utility components
     'ai-msg': AiMessageComponent,
     'aimessage': AiMessageComponent,
+    ai: AiMessageComponent,
+    Ai: AiMessageComponent,
+    human: HumanMessageComponent,
+    Human: HumanMessageComponent,
+    system: SystemMessageComponent,
+    System: SystemMessageComponent,
     'system-msg': SystemMessageComponent,
     'systemmessage': SystemMessageComponent,
     'msg-content': MessageContentComponent,
     'message-content': MessageContentComponent,
     conversation: ConversationComponent,
+    Conversation: ConversationComponent,
     folder: FolderComponent,
+    Folder: FolderComponent,
     tree: TreeComponent,
+    Tree: TreeComponent,
     
     # Styling components
     let: LetComponent,

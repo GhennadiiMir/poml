@@ -32,6 +32,14 @@ module Poml
     end
     
     def handle_general_meta
+      # Handle general metadata attributes
+      %w[title description author keywords].each do |attr|
+        value = get_attribute(attr)
+        if value
+          @context.custom_metadata[attr] = value
+        end
+      end
+      
       # Handle version control
       min_version = get_attribute('minVersion')
       max_version = get_attribute('maxVersion')
