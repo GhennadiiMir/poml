@@ -114,6 +114,8 @@ module Poml
     Folder: FolderComponent,
     tree: TreeComponent,
     Tree: TreeComponent,
+    file: FileComponent,
+    File: FileComponent,
     
     # Styling components
     let: LetComponent,

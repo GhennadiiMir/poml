@@ -6,17 +6,17 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 ## Project Status
 
-**Current Version**: 0.0.2  
+**Current Version**: 0.0.3  
 **Ruby Compatibility**: >= 2.7.0  
 **Test Framework**: Minitest  
-**Test Coverage**: 56 tests, 312 assertions (All passing in stable test suite)
+**Test Coverage**: 68 tests, 354 assertions (All passing in stable test suite)
 
 **Recent Achievements**:
 
-- ✅ **Table Component Completed** - Full table component functionality working with all features
-- ✅ **Data Components Enhanced** - JSON records, selectedColumns, maxRecords, CSV/JSON file support
-- ✅ **Error Handling Improved** - Graceful handling of malformed JSON and missing files
-- ✅ **Test Suite Expanded** - Table component tests added to stable test suite
+- ✅ **File Operations Completed** - Full file component functionality with error handling
+- ✅ **Folder Component Enhanced** - Fixed directory listing to show subdirectories correctly  
+- ✅ **Path Resolution** - Support for absolute and relative paths with proper fallback logic
+- ✅ **Test Suite Expanded** - File component tests added to stable test suite
 
 ---
 
@@ -52,11 +52,17 @@ This document tracks the implementation status of all POML features in the Ruby 
 | `langchain` | ❌ Missing | ❌ No tests | LangChain format |
 | `pydantic` | ❌ Missing | ❌ No tests | Pydantic models |
 
-### Data Components
+### File Operations
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<table>` | ✅ Working | ✅ Tested | Table from JSON/CSV data with selectedColumns and maxRecords |
+| `<file>` | ✅ Working | ✅ Tested | File content reading with path resolution and error handling |
+
+### Utility Components
+
+| Component | Status | Tests | Description |
+|-----------|--------|-------|-------------|
+| `<folder>` | ✅ Working | ✅ Tested | Directory listing with depth control and filtering |
 
 ### Core Infrastructure
 
@@ -94,10 +100,9 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<file>` | 🔧 Partial | ❌ Failing | File content reading - component exists but returns placeholder text |
-| `<folder>` | 🔧 Partial | ❌ Failing | Directory listing - component exists but returns placeholder text |
+| `<include>` | ❌ Missing | ❌ No tests | Template inclusion |
 
-**Issue**: File components are implemented but return placeholder content instead of reading actual files.
+**Issue**: Include component for template composition not yet implemented.
 
 ---
 
@@ -143,19 +148,19 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 ## 📊 Test Suite Status
 
-### ✅ Passing Test Files (5 files, 56 tests)
+### ✅ Passing Test Files (6 files, 68 tests)
 
 - `test_basic_functionality.rb` - Core formatting and chat components
 - `test_implemented_features.rb` - Current working features  
 - `test_real_implementation.rb` - Comprehensive real-world scenarios
 - `test_formatting_components.rb` - All formatting components (bold, italic, underline, etc.)
 - `test_table_component.rb` - Table rendering from JSON/CSV with all features
+- `test_file_components.rb` - File reading operations with path resolution
 
-### ⚠️ Failing Test Files (10 files, ~100+ tests)
+### ⚠️ Failing Test Files (9 files, ~80+ tests)
 
 - `test_template_engine.rb` - Template variables, loops, conditions
-- `test_file_components.rb` - File reading operations  
-- `test_utility_components.rb` - Folder, tree, conversation components
+- `test_utility_components.rb` - Utility components (conversation, tree, lists)
 - `test_meta_component.rb` - Metadata handling
 - `test_chat_components.rb` - Advanced chat features
 - `test_error_handling.rb` - Comprehensive error scenarios
@@ -167,10 +172,10 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 ```bash
 # ✅ Run only passing tests (recommended)
-bundle exec rake test           # 56 tests, 0 failures
+bundle exec rake test           # 68 tests, 0 failures
 
 # ⚠️ Run all tests (many will fail)  
-bundle exec rake test_all       # 150+ tests, ~80+ failures
+bundle exec rake test_all       # 187+ tests, ~25+ failures
 
 # 🔧 Development testing
 bundle exec rake test_working   # Same as rake test
@@ -210,14 +215,16 @@ bundle exec rake test_working   # Same as rake test
 
 **Impact**: ✅ **COMPLETED** - Fixed 9+ failing tests, table component fully functional
 
-### Phase 4: File Operations (Next Priority)  
+### ✅ Phase 4: File Operations (COMPLETED)
 
-1. **File Operations** - Implement actual file reading for `<file src="">`
-2. **Folder Operations** - Implement actual directory listing for `<folder>`
+1. ✅ **File Component** - Implemented `<file src="">` for reading text files with path resolution
+2. ✅ **Folder Component** - Enhanced existing `<folder>` component for proper directory listing
+3. ✅ **Error Handling** - Graceful handling of missing files and invalid paths  
+4. ✅ **Path Resolution** - Support for absolute and relative paths with fallback logic
 
-**Impact**: Would fix ~10+ failing tests
+**Impact**: ✅ **COMPLETED** - Fixed 12+ failing tests, file operations fully functional
 
-### Phase 5: Utility Components (Medium Priority)
+### Phase 5: Utility Components (Next Priority)
 
 1. **Example Components** - Implement few-shot learning support
 2. **Media Components** - Implement audio/image handling
@@ -297,7 +304,8 @@ test/
 
 ### Next Milestones  
 
-- 🎯 **File Operations**: File reading component implementation (target: +10 passing tests)
+- 🎯 **File Operations**: File reading and folder listing working (target: +12 passing tests) ✅ **COMPLETED**
+- 🎯 **Utility Components**: Tree, conversation, and list components (target: +15 passing tests)
 - 🎯 **List Components**: Fix list rendering markdown formatting (target: +5 passing tests)  
 - 🎯 **Utility Components**: Folder and tree components (target: +15 passing tests)
 - 🎯 **Full Compatibility**: All tutorial examples working
@@ -338,5 +346,5 @@ bundle exec ruby -Ilib:test test/test_template_engine.rb
 
 ---
 
-**Last Updated**: August 18, 2025 - Table Component Implementation Complete  
-**Next Review**: When file operations are implemented
+**Last Updated**: August 18, 2025 - File Operations Implementation Complete  
+**Next Review**: When utility components are implemented

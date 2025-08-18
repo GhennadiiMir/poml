@@ -244,12 +244,20 @@ module Poml
           if File.directory?(full_path)
             # Check if directory should be included
             if !filter || entry.match?(Regexp.new(filter))
-              sub_items = build_tree_structure(full_path, filter, max_depth, show_content, current_depth + 1)
-              if sub_items && !sub_items.empty?
+              if current_depth + 1 < max_depth
+                # If we can go deeper, recurse and include subdirectories
+                sub_items = build_tree_structure(full_path, filter, max_depth, show_content, current_depth + 1)
                 items << {
                   name: "#{entry}/",
                   type: 'directory',
-                  children: sub_items
+                  children: sub_items || []
+                }
+              else
+                # At max depth, just show the directory without recursing
+                items << {
+                  name: "#{entry}/",
+                  type: 'directory',
+                  children: []
                 }
               end
             end
@@ -503,6 +511,70 @@ module Poml
     
     def escape_xml(text)
       text.to_s.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub('"', '&quot;')
+    end
+  end
+
+  # File component for reading and including file contents
+  class FileComponent < Component
+    def render
+      apply_stylesheet
+      
+      src = get_attribute('src')
+      
+      # Handle missing src attribute
+      unless src
+        return handle_error("no src specified")
+      end
+      
+      # Resolve file path
+      file_path = resolve_file_path(src)
+      
+      # Check if file exists
+      unless File.exist?(file_path)
+        return handle_error("file not found: #{src}")
+      end
+      
+      # Read file content
+      begin
+        content = File.read(file_path, encoding: 'utf-8')
+        
+        if xml_mode?
+          render_as_xml('file', content, { src: src })
+        else
+          content
+        end
+      rescue => e
+        handle_error("error reading file: #{e.message}")
+      end
+    end
+    
+    private
+    
+    def resolve_file_path(src)
+      # Handle absolute paths
+      return src if src.start_with?('/')
+      
+      # Handle relative paths - try relative to source file first
+      if @context.source_path
+        base_path = File.dirname(@context.source_path)
+        candidate_path = File.join(base_path, src)
+        return candidate_path if File.exist?(candidate_path)
+      end
+      
+      # Try relative to current working directory
+      candidate_path = File.join(Dir.pwd, src)
+      return candidate_path if File.exist?(candidate_path)
+      
+      # Return the original path for final existence check
+      src
+    end
+    
+    def handle_error(message)
+      if xml_mode?
+        render_as_xml('file-error', message)
+      else
+        "[File: #{message}]"
+      end
     end
   end
 end

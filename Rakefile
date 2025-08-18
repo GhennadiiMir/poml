@@ -13,7 +13,8 @@ Rake::TestTask.new(:test) do |t|
     'test/test_implemented_features.rb',
     'test/test_real_implementation.rb',
     'test/test_formatting_components.rb',
-    'test/test_table_component.rb'
+    'test/test_table_component.rb',
+    'test/test_file_components.rb'
   ]
   t.verbose = true
   t.ruby_opts = ['-w']
@@ -35,7 +36,8 @@ Rake::TestTask.new(:test_working) do |t|
     'test/test_implemented_features.rb',
     'test/test_real_implementation.rb',
     'test/test_formatting_components.rb',
-    'test/test_table_component.rb'
+    'test/test_table_component.rb',
+    'test/test_file_components.rb'
   ]
   t.verbose = true
   t.ruby_opts = ['-w']
