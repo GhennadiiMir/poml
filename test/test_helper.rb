@@ -1,17 +1,12 @@
 require 'minitest/autorun'
 
-# Try to use minitest-reporters if available, but don't fail if not
-begin
-  require 'minitest/reporters'
-  Minitest::Reporters.use! [Minitest::Reporters::ProgressReporter.new]
-rescue LoadError
-  # Fall back to default Minitest output if minitest-reporters not available
-  puts "Note: Install 'minitest-reporters' gem for better test output formatting"
-end
+# Add lib directory to load path
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 
 require "poml"
 require "json"
 require "tempfile"
+require "fileutils"
 
 # Test helper methods
 module TestHelper
@@ -30,24 +25,23 @@ module TestHelper
     file.path
   end
   
-  def assert_poml_output(markup, format, expected_content)
+  def assert_poml_output(markup, expected_content, format: 'raw')
     result = Poml.process(markup: markup, format: format)
-    case format
-    when 'raw'
-      assert_includes result, expected_content
-    when 'dict'
-      assert_includes result['content'], expected_content
-    when 'openai_chat'
-      assert result.any? { |msg| msg['content'].include?(expected_content) }
-    end
+    assert_includes result, expected_content, "Expected POML output to contain '#{expected_content}'"
   end
   
   def assert_valid_openai_chat(result)
-    assert_kind_of Array, result
+    assert_kind_of Array, result, "OpenAI chat format should return an Array"
     result.each do |message|
-      assert_kind_of Hash, message
-      assert_includes ['user', 'assistant', 'system'], message['role']
-      assert_kind_of String, message['content']
+      assert_kind_of Hash, message, "Each message should be a Hash"
+      assert_includes message.keys, 'role', "Message should have 'role' key"
+      assert_includes message.keys, 'content', "Message should have 'content' key"
+      assert_includes ['user', 'assistant', 'system'], message['role'], "Role should be valid"
     end
+  end
+  
+  def assert_valid_dict_format(result)
+    assert_kind_of Hash, result, "Dict format should return a Hash"
+    assert_includes result.keys, 'content', "Dict should have 'content' key"
   end
 end

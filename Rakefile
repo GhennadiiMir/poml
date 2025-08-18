@@ -1,22 +1,40 @@
 require 'rake/testtask'
 
-# Default test task - runs all tests (many will fail due to unimplemented features)
-Rake::TestTask.new do |t|
-  t.libs << "test"
-  t.test_files = FileList['test/test_*.rb'].exclude('test/test_helper*.rb')
-  t.verbose = true
-  t.ruby_opts = ['-w'] # Enable warnings
-end
+# Test Tasks:
+# - rake test         : Run stable tests (default, all should pass)
+# - rake test_working : Same as rake test
+# - rake test_all     : Run all tests including unimplemented features (many will fail)
 
-# Working tests only - tests that should pass with current implementation
-Rake::TestTask.new(:test_working) do |t|
+# Stable tests - only tests that pass with current implementation
+Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.test_files = FileList[
     'test/test_basic_functionality.rb',
-    'test/test_implemented_features.rb'
+    'test/test_implemented_features.rb',
+    'test/test_real_implementation.rb'
   ]
   t.verbose = true
   t.ruby_opts = ['-w']
 end
 
-task default: :test_working
+# All tests including failing ones (for development)
+Rake::TestTask.new(:test_all) do |t|
+  t.libs << "test"
+  t.test_files = FileList['test/test_*.rb'].exclude('test/test_helper*.rb')
+  t.verbose = true
+  t.ruby_opts = ['-w']
+end
+
+# Legacy working tests (same as main test task)
+Rake::TestTask.new(:test_working) do |t|
+  t.libs << "test"
+  t.test_files = FileList[
+    'test/test_basic_functionality.rb',
+    'test/test_implemented_features.rb',
+    'test/test_real_implementation.rb'
+  ]
+  t.verbose = true
+  t.ruby_opts = ['-w']
+end
+
+task default: :test

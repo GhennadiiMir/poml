@@ -1,4 +1,4 @@
-require_relative "test_helper_simple"
+require_relative "test_helper"
 
 class TestImplementedFeatures < Minitest::Test
   include TestHelper
