@@ -3,7 +3,7 @@ module Poml
   class BoldComponent < Component
     def render
       apply_stylesheet
-      content = @element.content.empty? ? render_children : @element.content
+      content = @element.children.empty? ? @element.content : render_children
       
       if xml_mode?
         render_as_xml('b', content)
@@ -17,7 +17,7 @@ module Poml
   class ItalicComponent < Component
     def render
       apply_stylesheet
-      content = @element.content.empty? ? render_children : @element.content
+      content = @element.children.empty? ? @element.content : render_children
       
       if xml_mode?
         render_as_xml('i', content)
@@ -31,13 +31,13 @@ module Poml
   class UnderlineComponent < Component
     def render
       apply_stylesheet
-      content = @element.content.empty? ? render_children : @element.content
+      content = @element.children.empty? ? @element.content : render_children
       
       if xml_mode?
         render_as_xml('u', content)
       else
-        # HTML-style underline in markdown
-        "<u>#{content}</u>"
+        # Markdown-style underline
+        "__#{content}__"
       end
     end
   end
@@ -46,7 +46,7 @@ module Poml
   class StrikethroughComponent < Component
     def render
       apply_stylesheet
-      content = @element.content.empty? ? render_children : @element.content
+      content = @element.children.empty? ? @element.content : render_children
       
       if xml_mode?
         render_as_xml('s', content)

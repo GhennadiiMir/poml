@@ -86,13 +86,17 @@ module Poml
       rendered_children.each_with_index do |child_content, index|
         result << child_content
         
-        # Add spacing if current element is text and next element is a component  
+        # Add spacing if current element is text and next element is a block-level component
         if index < rendered_children.length - 1
           current_element = @element.children[index]
           next_element = @element.children[index + 1]
           
+          # Only add spacing for block-level components, not inline components
           if current_element.text? && next_element.component?
-            result << "\n\n"
+            next_component_class = Components::COMPONENT_MAPPING[next_element.tag_name]
+            if next_component_class && !is_inline_component?(next_component_class)
+              result << "\n\n"
+            end
           end
         end
       end
@@ -121,6 +125,34 @@ module Poml
       else
         text
       end
+    end
+    
+    def inline_component?
+      # Override this in inline components
+      false
+    end
+    
+    def self.inline_component_classes
+      # List of component classes that should be treated as inline
+      @inline_component_classes ||= []
+    end
+    
+    def self.register_inline_component(component_class)
+      inline_component_classes << component_class
+    end
+    
+    private
+    
+    def is_inline_component?(component_class)
+      # Check if the component class is registered as inline
+      # For now, we'll use a simple list of known inline formatting components
+      inline_component_names = %w[
+        BoldComponent ItalicComponent UnderlineComponent StrikethroughComponent 
+        CodeComponent InlineComponent
+      ]
+      
+      component_class_name = component_class.name.split('::').last
+      inline_component_names.include?(component_class_name)
     end
   end
 

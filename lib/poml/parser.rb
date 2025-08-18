@@ -47,6 +47,9 @@ module Poml
         end
       end
       
+      # Convert HTML-style void elements to XML self-closing format
+      content = preprocess_void_elements(content)
+      
       # Apply template substitutions
       content = @template_engine.substitute(content)
 
@@ -89,17 +92,15 @@ module Poml
           text_content = child.to_s
           next if text_content.strip.empty?  # Only skip if completely empty when stripped
           
-          # Check if the content (after removing newlines) ends with a space
-          content_no_newlines = text_content.gsub(/\n/, ' ')
-          preserves_trailing_space = content_no_newlines.rstrip != content_no_newlines
+          # For inline content, preserve spaces but normalize newlines
+          # Convert newlines to single spaces to avoid formatting issues
+          normalized = text_content.gsub(/\s*\n\s*/, ' ')
           
-          # Normalize the text: strip leading/trailing whitespace 
-          normalized = text_content.strip
+          # Trim only if the content is just whitespace, otherwise preserve leading/trailing spaces
+          if normalized.strip.empty?
+            next
+          end
           
-          # Add back trailing space if it was significant (i.e., there was a space before newlines)
-          normalized += ' ' if preserves_trailing_space
-          
-          next if normalized.empty?
           elements << Element.new(tag_name: :text, content: normalized)
         when REXML::Element
           # Convert REXML attributes to string hash
@@ -230,6 +231,25 @@ module Poml
         # Invalid for syntax, return empty
         []
       end
+    end
+    
+    def preprocess_void_elements(content)
+      # List of HTML void elements that should be self-closing in XML
+      void_elements = %w[br hr img input area base col embed link meta param source track wbr]
+      
+      # Convert <element> to <element/> for void elements, but only if not already self-closing
+      void_elements.each do |element|
+        # Match opening tag that's not already self-closing
+        # Use a more specific pattern to avoid matching already self-closing tags
+        pattern = /<(#{element})(\s+[^>\/]*?)?(?<!\/)>/i
+        content = content.gsub(pattern) do |match|
+          element_name = $1
+          attributes = $2 || ''
+          "<#{element_name}#{attributes}/>"
+        end
+      end
+      
+      content
     end
     
     def preprocess_json_attributes(content)
