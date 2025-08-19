@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3] - 2025-08-19
+
+### Added
+
+- Complete FileComponent implementation with comprehensive file operations support
+- Enhanced folder handling capabilities for directory operations
+- Improved file reading, writing, and management features
+- Comprehensive debug documentation with implementation summaries
+- Enhanced test coverage for file operations and table components
+
+### Enhanced
+
+- TableComponent with improved attribute parsing and error handling
+- Better validation and error reporting for table data processing
+- Enhanced utility components with expanded functionality
+- Improved component registration and loading mechanisms
+
+### Changed
+
+- Updated ROADMAP with detailed progress tracking and implementation status
+- Enhanced Rakefile with improved task definitions and build processes
+- Refined component architecture for better maintainability
+
+### Fixed
+
+- Improved error handling in table component parsing
+- Enhanced attribute validation and processing
+- Better handling of edge cases in file operations
+
 ## [0.0.2] - 2025-08-18
 
 ### Added

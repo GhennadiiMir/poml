@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "poml"
-  spec.version       = "0.0.2"
+  spec.version       = "0.0.3"
   spec.authors       = ["Ghennadii Mirosnicenco"]
   spec.email         = ["linkator7@gmail.com"]
 
