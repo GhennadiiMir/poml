@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    poml (0.0.2)
+    poml (0.0.3)
       rexml (~> 3.2)
       rubyzip (~> 2.3)
 
