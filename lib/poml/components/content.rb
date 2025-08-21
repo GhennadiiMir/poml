@@ -135,7 +135,7 @@ module Poml
           end
         end
         return content unless content.empty?
-      rescue => e
+      rescue
         # Zip gem not available or error occurred
       end
 

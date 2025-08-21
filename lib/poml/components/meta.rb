@@ -78,8 +78,8 @@ module Poml
     
     def handle_response_schema
       lang = get_attribute('lang', 'auto')
-      name = get_attribute('name')
-      description = get_attribute('description')
+      _name = get_attribute('name')  # May be used for schema naming in future
+      _description = get_attribute('description')  # May be used for schema documentation in future
       
       content = @element.content.strip
       
@@ -168,7 +168,7 @@ module Poml
       
       begin
         JSON.parse(processed_content)
-      rescue JSON::ParserError => e
+      rescue JSON::ParserError
         nil
       end
     end
@@ -180,7 +180,7 @@ module Poml
         # For now, just return the content as-is for expression schemas
         # In a complete implementation, you'd evaluate this as JavaScript
         { type: 'expression', content: content }
-      rescue => e
+      rescue
         nil
       end
     end

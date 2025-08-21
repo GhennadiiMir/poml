@@ -25,7 +25,7 @@ module Poml
           stylesheet = JSON.parse(stylesheet_content)
           @context.stylesheet.merge!(stylesheet) if stylesheet.is_a?(Hash)
         end
-      rescue => e
+      rescue
         # Silently fail JSON parsing errors
       end
       

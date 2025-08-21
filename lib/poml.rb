@@ -17,69 +17,15 @@ module Poml
   # - stylesheet: Optional stylesheet as string or hash
   # - chat: Boolean indicating chat format (default: true)
   # - output_file: Path to save output (optional)
+  # Process POML markup and return the rendered result
+  # 
+  # Parameters:
+  # - markup: POML markup string or file path
   # - format: 'raw', 'dict', 'openai_chat', 'langchain', 'pydantic' (default: 'dict')
-  # - extra_args: Array of extra CLI args (ignored in pure Ruby implementation)
-  def self.process(markup:, context: nil, stylesheet: nil, chat: true, output_file: nil, format: 'dict', extra_args: [])
-    # Create POML context
-    poml_context = Context.new(
-      variables: context || {},
-      stylesheet: stylesheet,
-      chat: chat
-    )
-
-    # Read markup content and set source path
-    content = if File.exist?(markup.to_s)
-      poml_context.source_path = File.expand_path(markup.to_s)
-      File.read(markup)
-    else
-      markup.to_s
-    end
-
-    # Parse POML content
-    parser = Parser.new(poml_context)
-    parsed_elements = parser.parse(content)
-
-    # Render to the desired format
-    renderer = Renderer.new(poml_context)
-    result = renderer.render(parsed_elements, format)
-
-    # Save to file if specified
-    if output_file
-      File.write(output_file, result)
-    end
-
-    result
-  end
-
-  def self.parse(content, context: nil)
-    context ||= Context.new
-    parser = Parser.new(context)
-    parser.parse(content)
-  end
-
-  def self.render(content, format: 'text', context: nil, **options)
-    context ||= Context.new(**options)
-    elements = parse(content, context: context)
-    renderer = Renderer.new(context)
-    renderer.render(elements, format)
-  end
-
-  # Convenience method for quick text rendering
-  def self.to_text(content, **options)
-    render(content, format: 'raw', **options)
-  end
-
-  # Convenience method for chat format
-  def self.to_chat(content, **options)
-    render(content, format: 'openai_chat', **options)
-  end
-
-  # Convenience method for dict format
-  def self.to_dict(content, **options)
-    render(content, format: 'dict', **options)
-  end
-  
-  # Legacy method for backward compatibility
+  # - context/variables: Hash of template variables
+  # - stylesheet: CSS/styling rules
+  # - chat: Enable chat mode (default: true)
+  # - output_file: File path to write output to
   def self.process(markup:, format: 'dict', **options)
     # Handle file paths
     content = if File.exist?(markup)
@@ -115,5 +61,33 @@ module Poml
     else
       result
     end
+  end
+
+  def self.parse(content, context: nil)
+    context ||= Context.new
+    parser = Parser.new(context)
+    parser.parse(content)
+  end
+
+  def self.render(content, format: 'text', context: nil, **options)
+    context ||= Context.new(**options)
+    elements = parse(content, context: context)
+    renderer = Renderer.new(context)
+    renderer.render(elements, format)
+  end
+
+  # Convenience method for quick text rendering
+  def self.to_text(content, **options)
+    render(content, format: 'raw', **options)
+  end
+
+  # Convenience method for chat format
+  def self.to_chat(content, **options)
+    render(content, format: 'openai_chat', **options)
+  end
+
+  # Convenience method for dict format
+  def self.to_dict(content, **options)
+    render(content, format: 'dict', **options)
   end
 end

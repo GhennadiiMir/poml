@@ -9,7 +9,7 @@ module Poml
       
       src = get_attribute('src')
       records_attr = get_attribute('records')
-      columns_attr = get_attribute('columns') 
+      _columns_attr = get_attribute('columns')  # Not used but may be needed for future features
       parser = get_attribute('parser', 'auto')
       syntax = get_attribute('syntax')
       selected_columns = parse_array_attribute('selectedColumns')
@@ -85,7 +85,7 @@ module Poml
       else
         { records: [], columns: [] }
       end
-    rescue => e
+    rescue
       { records: [], columns: [] }
     end
     
@@ -138,7 +138,7 @@ module Poml
       records = if records_attr.is_a?(String)
         begin
           JSON.parse(records_attr)
-        rescue JSON::ParserError => e
+        rescue JSON::ParserError
           # Return empty records on parse error
           return { records: [], columns: [] }
         end
@@ -479,7 +479,7 @@ module Poml
       base64 = get_attribute('base64')
       extract_text = get_attribute('extractText', false)
       selector = get_attribute('selector', 'body')
-      syntax = get_attribute('syntax', 'text')
+      _syntax = get_attribute('syntax', 'text')  # May be used for future formatting options
       
       content = if url
         fetch_webpage_content(url, selector, extract_text)

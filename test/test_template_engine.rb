@@ -69,7 +69,7 @@ class TestTemplateEngine < Minitest::Test
     assert_includes result, '10 meets threshold'
     assert_includes result, '15 meets threshold'
     # Check that 5 doesn't meet the threshold by looking for the exact boundary
-    refute_match /\b5 meets threshold/, result
+    refute_match(/\b5 meets threshold/, result)
   end
 
   def test_template_with_meta_variables

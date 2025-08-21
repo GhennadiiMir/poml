@@ -134,7 +134,7 @@ module Poml
       # Check for system-oriented components
       has_role = tag_names.include?(:role)
       has_task = tag_names.include?(:task)
-      has_hint = tag_names.include?(:hint)
+      _has_hint = tag_names.include?(:hint)  # Prefix with underscore to indicate intentionally unused
       
       # Check for human-oriented components or content that suggests user interaction
       has_document = tag_names.include?(:document) || tag_names.include?('Document')

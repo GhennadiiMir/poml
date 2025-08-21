@@ -28,22 +28,6 @@ module Poml
     end
   end
 
-  # Human Message component
-  class HumanMessageComponent < Component
-    def render
-      apply_stylesheet
-      
-      content = @element.content.empty? ? render_children : @element.content
-      speaker = get_attribute('speaker', 'human')
-
-      if xml_mode?
-        render_as_xml('human-message', content)
-      else
-        "#{content}\n\n"
-      end
-    end
-  end
-
   # Question-Answer component
   class QAComponent < Component
     def render
