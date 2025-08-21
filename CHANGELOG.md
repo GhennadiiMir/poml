@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2025-08-21
+
+### 🔄 Breaking Changes Compatibility
+
+- **Schema Syntax Update**: Added support for new `parser` attribute syntax while maintaining backward compatibility
+  - Support for new `parser="json"` and `parser="eval"` attributes
+  - Maintained backward compatibility with legacy `lang="json"` and `lang="expr"` syntax
+  - `parser` attribute takes precedence when both are present
+  - Addresses breaking changes in original POML library
+
+### Added
+
+- **Schema Compatibility**: Comprehensive backward compatibility for schema definitions
+- **Enhanced Meta Component**: Updated to handle both old and new schema syntax
+- **Test Suite Expansion**: Added 12 comprehensive schema compatibility tests (62 assertions)
+- **Example Files**: 
+  - `examples/301_new_schema_syntax.poml` - demonstrates new schema syntax
+  - `examples/302_schema_compatibility.poml` - shows backward compatibility
+- **Documentation Updates**: Updated README and ROADMAP to reflect compatibility changes
+
+### Enhanced
+
+- **Tool Registration**: Improved tool definition parsing with new syntax support
+- **Error Handling**: Enhanced error handling in components and parser
+- **Method Signatures**: Updated for future extensibility
+- **List Components**: Fixed markdown formatting with proper nested content handling
+- **Utility Components**: Enhanced conversation component with role/speaker support
+- **Template Engine**: Improved meta variables support and template substitution
+
+### Fixed
+
+- **Meta Component**: Removed from void elements list, now properly processes content and variables
+- **Test Assertions**: Improved clarity and reliability of test assertions
+- **Component Rendering**: Better handling of nested content in list and utility components
+
+### Developer Experience
+
+- **Test Coverage**: Expanded to 111 tests with improved stability
+- **Code Quality**: Refactored error handling and component architecture
+- **Compatibility**: Seamless migration path for existing POML documents
+
 ## [0.0.3] - 2025-08-19
 
 ### Added
