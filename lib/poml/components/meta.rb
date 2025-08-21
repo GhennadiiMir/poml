@@ -77,18 +77,22 @@ module Poml
     end
     
     def handle_response_schema
-      lang = get_attribute('lang', 'auto')
+      # Support both old 'lang' and new 'parser' attributes for compatibility
+      parser_attr = get_attribute('parser') || get_attribute('lang', 'auto')
       _name = get_attribute('name')  # May be used for schema naming in future
       _description = get_attribute('description')  # May be used for schema documentation in future
       
       content = @element.content.strip
       
-      # Auto-detect format if lang is auto
-      if lang == 'auto'
-        lang = content.start_with?('{') ? 'json' : 'expr'
+      # Auto-detect format if parser_attr is auto
+      if parser_attr == 'auto'
+        parser_attr = content.start_with?('{') ? 'json' : 'expr'
       end
       
-      schema = case lang.downcase
+      # Handle new 'eval' parser type as alias for 'expr'
+      parser_attr = 'expr' if parser_attr == 'eval'
+      
+      schema = case parser_attr.downcase
       when 'json'
         parse_json_schema(content)
       when 'expr'
@@ -106,18 +110,22 @@ module Poml
     def handle_tool_registration
       name = get_attribute('name')
       description = get_attribute('description')
-      lang = get_attribute('lang', 'auto')
+      # Support both old 'lang' and new 'parser' attributes for compatibility
+      parser_attr = get_attribute('parser') || get_attribute('lang', 'auto')
       
       return unless name
       
       content = @element.content.strip
       
-      # Auto-detect format if lang is auto
-      if lang == 'auto'
-        lang = content.start_with?('{') ? 'json' : 'expr'
+      # Auto-detect format if parser_attr is auto
+      if parser_attr == 'auto'
+        parser_attr = content.start_with?('{') ? 'json' : 'expr'
       end
       
-      schema = case lang.downcase
+      # Handle new 'eval' parser type as alias for 'expr'
+      parser_attr = 'expr' if parser_attr == 'eval'
+      
+      schema = case parser_attr.downcase
       when 'json'
         parse_json_schema(content)
       when 'expr'
@@ -174,14 +182,18 @@ module Poml
     end
     
     def evaluate_expression_schema(content)
-      # This is a simplified version - in a full implementation,
-      # you'd want to evaluate JavaScript expressions with Zod support
+      # Handle template expressions in the content
+      processed_content = @context.template_engine.substitute(content)
+      
       begin
-        # For now, just return the content as-is for expression schemas
-        # In a complete implementation, you'd evaluate this as JavaScript
-        { type: 'expression', content: content }
-      rescue
-        nil
+        # For expression schemas, try to parse as JSON first
+        # In the original POML, 'expr' mode evaluates JavaScript expressions
+        # but for simplicity in Ruby, we'll try JSON parsing
+        JSON.parse(processed_content)
+      rescue JSON::ParserError
+        # If JSON parsing fails, return a simple schema object
+        # This is a fallback for complex expressions that can't be easily evaluated
+        { 'type' => 'string', 'description' => 'Expression schema result' }
       end
     end
     

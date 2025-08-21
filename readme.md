@@ -6,6 +6,8 @@ A Ruby implementation of the POML (Prompt Oriented Markup Language) interpreter.
 
 This is a **Ruby port** of the original [POML library](https://github.com/microsoft/poml) developed by Microsoft, which was originally implemented in JavaScript/TypeScript and Python. This Ruby gem is designed to be **fully compatible** with the original POML specification and will **closely follow** the development of the original library to maintain feature parity.
 
+> **🔄 Recent Update**: The original POML library has introduced **breaking changes** in schema definitions. Schema attributes have been renamed from `lang` to `parser` (e.g., `lang="json"` → `parser="json"`, `lang="expr"` → `parser="eval"`). Our Ruby implementation is being updated to maintain compatibility with these changes.
+
 ## Demo Video
 
 [![The 5-minute guide to POML](https://i3.ytimg.com/vi/b9WDcFsKixo/maxresdefault.jpg)](https://youtu.be/b9WDcFsKixo)
@@ -205,6 +207,8 @@ Customize component appearance:
 - ✅ Stylesheet support
 - ✅ Command-line interface
 - ✅ Chat vs non-chat modes
+- 🔄 **Schema definitions** (updating to new `parser` attribute syntax)
+- 🔄 **Tool registration** (updating for enhanced tool use support)
 
 ## Document Support
 

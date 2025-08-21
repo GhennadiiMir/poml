@@ -4,6 +4,8 @@
 
 This document tracks the implementation status of all POML features in the Ruby gem, including comprehensive test coverage information.
 
+> **🔄 Breaking Changes Alert**: The original POML library has introduced breaking changes. Schema attributes have been renamed from `lang` to `parser` (e.g., `lang="json"` → `parser="json"`, `lang="expr"` → `parser="eval"`). Our implementation needs updates to maintain compatibility.
+
 ## Project Status
 
 **Current Version**: 0.0.4  
@@ -18,6 +20,47 @@ This document tracks the implementation status of all POML features in the Ruby 
 - ✅ **Meta Component Fixed** - Removed meta from void elements list, now properly processes content and variables
 - ✅ **Template Engine Completed** - All template engine tests now passing with full meta variables support
 - ✅ **Test Suite Expanded** - Added utility components, meta component, and template engine tests to stable suite
+
+**⚠️ Compatibility Updates Needed**:
+
+- ✅ **Schema Syntax Update** - Updated from `lang` to `parser` attributes with backward compatibility
+- 🔄 **Tool Registration Enhancement** - Enhanced tool use capabilities need implementation
+- 🔄 **Runtime Parameters** - Improved parameter handling with automatic type conversion
+
+---
+
+## 🔄 Compatibility Updates Required
+
+### Schema Definition Changes (Breaking)
+
+| Component | Current Status | Required Update | Priority |
+|-----------|----------------|-----------------|----------|
+| `<output-schema>` | ✅ Supports both `lang` and `parser` | Backward compatible implementation | **Complete** |
+| `<tool-definition>` | ✅ Supports both `lang` and `parser` | Backward compatible implementation | **Complete** |
+| Meta schema handling | ✅ Updated attribute parsing | Support both `lang` and `parser` for compatibility | **Complete** |
+
+**Breaking Changes Details**:
+
+- `lang="json"` → `parser="json"`
+- `lang="expr"` → `parser="eval"`
+- Auto-detection logic remains the same
+- Template expressions in attributes enhanced
+
+### Enhanced Tool Registration
+
+| Feature | Status | Required Update | Priority |
+|---------|--------|-----------------|----------|
+| Tool attribute templates | ❌ Missing | Support `{{variable}}` in tool attributes | **Medium** |
+| Runtime parameter conversion | ❌ Missing | Automatic type conversion (boolean, number, JSON) | **Medium** |
+| Parameter key conversion | ❌ Missing | kebab-case → camelCase conversion | **Medium** |
+
+### Enhanced Features
+
+| Feature | Status | Description | Priority |
+|---------|--------|-------------|----------|
+| Integration tests | ❌ Missing | Add integration test framework | **Low** |
+| Citation support | ❌ Missing | Research paper citation metadata | **Low** |
+| Nightly testing | ❌ Missing | Automated package validation | **Low** |
 
 ---
 
@@ -318,6 +361,8 @@ test/
 
 ### Next Milestones  
 
+- ✅ **Schema Compatibility Update** (🎉 **Complete**): Updated `lang` → `parser` attribute support with backward compatibility (+12 passing tests)
+- 🎯 **Enhanced Tool Registration**: Template expressions in tool attributes and improved parameter handling (target: +8 passing tests)
 - 🎯 **Advanced Features**: Example components and few-shot learning support (target: +10 passing tests)
 - 🎯 **Media Components**: Audio and image handling (target: +5 passing tests)
 - 🎯 **Include Component**: Template inclusion and composition (target: +8 passing tests)

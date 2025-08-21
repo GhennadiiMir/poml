@@ -1,0 +1,48 @@
+<!-- Example showing backward compatibility support -->
+<poml>
+  <!-- This still works: Old lang attribute -->
+  <meta type="responseschema" lang="json">
+    {
+      "type": "object",
+      "properties": {
+        "old_format": {"type": "string"}
+      }
+    }
+  </meta>
+
+  <!-- This is the new way: parser attribute -->
+  <meta type="responseschema" parser="json">
+    {
+      "type": "object", 
+      "properties": {
+        "new_format": {"type": "string"}
+      }
+    }
+  </meta>
+
+  <!-- Expression evaluation with new syntax -->
+  <meta type="tool" name="calculator" parser="eval">
+    {
+      "type": "object",
+      "properties": {
+        "operation": {"type": "string", "enum": ["add", "subtract", "multiply", "divide"]},
+        "a": {"type": "number"},
+        "b": {"type": "number"}
+      }
+    }
+  </meta>
+
+  <role>Compatibility demonstration assistant</role>
+  <task>
+    Show that both old and new schema syntax work correctly.
+    The Ruby POML implementation supports both for backward compatibility.
+  </task>
+
+  <p>This example demonstrates that our Ruby implementation supports both:</p>
+  <list>
+    <item>Legacy `lang="json"` and `lang="expr"` attributes</item>
+    <item>New `parser="json"` and `parser="eval"` attributes</item>
+  </list>
+
+  <p>When both are present, `parser` takes precedence over `lang`.</p>
+</poml>
