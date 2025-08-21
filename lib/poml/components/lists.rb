@@ -33,30 +33,14 @@ module Poml
               "- "
             end
             
-            # Get text content and nested elements separately
-            text_content = child.content.strip
-            nested_elements = child.children.reject { |c| c.tag_name == :text }
-            
-            if nested_elements.any?
-              # Item has both text and nested elements (like nested lists)
-              nested_content = nested_elements.map { |nested_child| 
-                Components.render_element(nested_child, @context) 
-              }.join('').strip
-              
-              # Format with text content on first line, nested content indented
-              indented_nested = nested_content.split("\n").map { |line| 
-                line.strip.empty? ? "" : "   #{line}" 
-              }.join("\n").strip
-              
-              if text_content.empty?
-                items << "#{bullet}#{indented_nested}"
-              else
-                items << "#{bullet}#{text_content} \n\n#{indented_nested}"
-              end
+            # Render all content (text + formatting) together
+            content = if child.children.any?
+              Components.render_element(child, @context).strip
             else
-              # Simple text-only item
-              items << "#{bullet}#{text_content}"
+              child.content.strip
             end
+            
+            items << "#{bullet}#{content}"
           end
         end
         
@@ -70,12 +54,26 @@ module Poml
   class ItemComponent < Component
     def render
       apply_stylesheet
-      content = @element.content.empty? ? render_children : @element.content.strip
       
       if xml_mode?
+        content = @element.content.empty? ? render_children : @element.content.strip
         "<item>#{content}</item>\n"
       else
-        content
+        # For raw mode, handle mixed content properly
+        if @element.children.any?
+          # Render text and child elements together
+          result = ""
+          @element.children.each do |child|
+            if child.text?
+              result += child.content
+            else
+              result += Components.render_element(child, @context)
+            end
+          end
+          result.strip
+        else
+          @element.content.strip
+        end
       end
     end
   end

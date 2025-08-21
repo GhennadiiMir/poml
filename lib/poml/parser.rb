@@ -235,7 +235,8 @@ module Poml
     
     def preprocess_void_elements(content)
       # List of HTML void elements that should be self-closing in XML
-      void_elements = %w[br hr img input area base col embed link meta param source track wbr]
+      # Note: 'meta' is removed from this list because POML meta components can have content
+      void_elements = %w[br hr img input area base col embed link param source track wbr]
       
       # Convert <element> to <element/> for void elements, but only if not already self-closing
       void_elements.each do |element|

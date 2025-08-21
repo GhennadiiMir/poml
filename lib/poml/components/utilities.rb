@@ -161,7 +161,7 @@ module Poml
     def render_conversation_xml(messages)
       result = ['<conversation>']
       messages.each do |msg|
-        speaker = msg['speaker'] || 'human'
+        speaker = msg['speaker'] || msg['role'] || 'human'
         content = msg['content'] || ''
         result << "  <msg speaker=\"#{speaker}\">#{escape_xml(content)}</msg>"
       end
@@ -172,7 +172,7 @@ module Poml
     def render_conversation_markdown(messages)
       result = []
       messages.each do |msg|
-        speaker = msg['speaker'] || 'human'
+        speaker = msg['speaker'] || msg['role'] || 'human'
         content = msg['content'] || ''
         
         case speaker.downcase

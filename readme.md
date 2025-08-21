@@ -239,7 +239,7 @@ Build and install locally:
 
 ```bash
 gem build poml.gemspec
-gem install poml-0.0.1.gem
+gem install poml-0.0.3.gem
 ```
 
 ## License
