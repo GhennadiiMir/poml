@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Schema Compatibility**: Comprehensive backward compatibility for schema definitions
 - **Enhanced Meta Component**: Updated to handle both old and new schema syntax
 - **Test Suite Expansion**: Added 12 comprehensive schema compatibility tests (62 assertions)
-- **Example Files**: 
+- **Example Files**:
   - `examples/301_new_schema_syntax.poml` - demonstrates new schema syntax
   - `examples/302_schema_compatibility.poml` - shows backward compatibility
 - **Documentation Updates**: Updated README and ROADMAP to reflect compatibility changes
