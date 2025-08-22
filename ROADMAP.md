@@ -8,7 +8,7 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 ## Project Status
 
-**Current Version**: 0.0.5  
+**Current Version**: 0.0.6  
 **Ruby Compatibility**: >= 2.7.0  
 **Test Framework**: Minitest  
 **Test Coverage**: 123 tests, 590 assertions (All passing in stable test suite)
