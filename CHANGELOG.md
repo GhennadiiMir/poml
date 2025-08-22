@@ -16,10 +16,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Enhanced Tool Registration System**:
+  - `MetaComponent`: Enhanced tool registration with multiple syntax formats
+    - `<meta tool="name" description="...">` - Attribute-based tool registration
+    - `<meta type="tool">` - JSON-based complete tool definition
+    - Automatic format detection (JSON vs expression)
+    - Full backward compatibility with existing syntax
+  - Fixed critical parser bug affecting example components (removed 'input' from void_elements)
+  - Comprehensive tool metadata integration in final output
 - **New Standalone Components**:
   - `OutputSchemaComponent`: Define AI response schemas with `<output-schema parser="json">`
   - `ToolDefinitionComponent`: Register AI tools with `<tool-definition name="..." parser="json">`
   - Support for `<tool>` as alias for `<tool-definition>`
+- **Example Components System**:
+  - `ExampleComponent`: Individual example with input/output pairs
+  - `InputComponent` & `OutputComponent`: Structured example data
+  - `ExampleSetComponent`: Collections of examples for few-shot learning
+  - Fixed rendering issues with nested components
 - **Updated Documentation Structure**:
   - Created comprehensive documentation index (`docs/index.md`) matching original library
   - Added Ruby SDK documentation (`docs/ruby/index.md`) with examples and API reference

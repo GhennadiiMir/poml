@@ -11,10 +11,12 @@ This document tracks the implementation status of all POML features in the Ruby 
 **Current Version**: 0.0.5  
 **Ruby Compatibility**: >= 2.7.0  
 **Test Framework**: Minitest  
-**Test Coverage**: 111 tests, 418 assertions (All passing in stable test suite)
+**Test Coverage**: 123 tests, 590 assertions (All passing in stable test suite)
 
 **Recent Achievements**:
 
+- ✅ **Enhanced Tool Registration System** - Implemented multiple tool registration formats with comprehensive metadata integration
+- ✅ **Example Components Fixed** - Fixed critical parser bug affecting nested components (removed 'input' from void_elements)
 - ✅ **List Components Fixed** - Fixed `<list>` and `<item>` markdown formatting with proper nested content handling
 - ✅ **Utility Components Enhanced** - Fixed conversation component to support both `role` and `speaker` attributes
 - ✅ **Meta Component Fixed** - Removed meta from void elements list, now properly processes content and variables
@@ -24,7 +26,7 @@ This document tracks the implementation status of all POML features in the Ruby 
 **⚠️ Compatibility Updates Needed**:
 
 - ✅ **Schema Syntax Update** - Updated from `lang` to `parser` attributes with backward compatibility
-- 🔄 **Tool Registration Enhancement** - Enhanced tool use capabilities need implementation
+- ✅ **Tool Registration Enhancement** - Enhanced tool use capabilities with multiple syntax formats
 - 🔄 **Runtime Parameters** - Improved parameter handling with automatic type conversion
 
 ---
@@ -50,7 +52,26 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 **Testing Status**: ✅ 8 comprehensive tests, 46 assertions - all passing
 
-### Enhanced Tool Registration
+### ✅ Enhanced Tool Registration (COMPLETED)
+
+| Feature | Status | Implementation Details | Priority |
+|---------|--------|------------------------|----------|
+| Multiple tool formats | ✅ **Complete** | `<meta tool="name">` and `<meta type="tool">` both supported | **✅ Done** |
+| JSON tool definitions | ✅ **Complete** | Complete tool definition in JSON content | **✅ Done** |
+| Attribute-based tools | ✅ **Complete** | Tool name and description via attributes | **✅ Done** |
+| Metadata integration | ✅ **Complete** | Tools properly added to final metadata output | **✅ Done** |
+| Backward compatibility | ✅ **Complete** | All existing tool syntax continues to work | **✅ Done** |
+
+**Testing Status**: ✅ Tool registration test now passing - comprehensive format support verified
+
+**Implementation Notes**:
+
+- Fixed `handle_tool_registration` to support complete JSON tool definitions
+- Added `handle_tool_registration_with_name` for attribute-based tool registration  
+- Enhanced parser to prevent void element conflicts with component names
+- Comprehensive debugging and validation completed
+
+### Future Tool Registration Enhancements
 
 | Feature | Status | Required Update | Priority |
 |---------|--------|-----------------|----------|
@@ -189,8 +210,9 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<example>` | ❌ Missing | ❌ No tests | Few-shot examples |
-| `<input>`/`<output>` | ❌ Missing | ❌ No tests | Example pairs |
+| `<example>` | ✅ Working | ✅ Tested | Few-shot examples with input/output pairs |
+| `<input>`/`<output>` | ✅ Working | ✅ Tested | Example input and output components |
+| `<examples>` | ✅ Working | ✅ Tested | Container for multiple example sets |
 | `<role>` | ❌ Missing | ❌ No tests | Role definitions |
 | `<task>` | ❌ Missing | ❌ No tests | Task instructions |
 
@@ -291,14 +313,22 @@ bundle exec rake test_working   # Same as rake test
 
 **Impact**: ✅ **COMPLETED** - Fixed 31+ failing tests, all major utility and template components working
 
-### Phase 6: Advanced Features (Next Priority)
+### ✅ Phase 6: Advanced Features (COMPLETED)
 
-1. **Example Components** - Implement few-shot learning support with `<example>`, `<input>`, `<output>` components
-2. **Media Components** - Implement audio/image handling
-3. **Include Component** - Template inclusion and composition
-4. **Additional Output Formats** - Add LangChain and Pydantic support
+1. ✅ **Example Components** - Implemented few-shot learning support with `<example>`, `<input>`, `<output>`, `<examples>` components
+2. ✅ **Enhanced Tool Registration** - Multiple tool registration formats with comprehensive metadata integration
+3. ✅ **Parser Bug Fixes** - Fixed critical void elements issue preventing nested component rendering
 
-**Impact**: Enhanced AI training and media capabilities
+**Impact**: ✅ **COMPLETED** - Enhanced AI training capabilities and robust tool integration
+
+### Phase 7: Future Advanced Features (Next Priority)
+
+1. **Media Components** - Implement audio/image handling  
+2. **Include Component** - Template inclusion and composition
+3. **Additional Output Formats** - Add LangChain and Pydantic support
+4. **Runtime Parameter Enhancements** - Advanced type conversion and template expressions
+
+**Impact**: Enhanced media capabilities and advanced templating
 
 ---
 

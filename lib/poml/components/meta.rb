@@ -49,6 +49,12 @@ module Poml
         handle_variables(variables_attr)
       end
       
+      # Handle tool registration via tool attribute
+      tool_attr = get_attribute('tool')
+      if tool_attr
+        handle_tool_registration_with_name(tool_attr)
+      end
+      
       # Handle general metadata attributes
       %w[title description author keywords].each do |attr|
         value = get_attribute(attr)
@@ -118,7 +124,52 @@ module Poml
       # Support both old 'lang' and new 'parser' attributes for compatibility
       parser_attr = get_attribute('parser') || get_attribute('lang', 'auto')
       
-      return unless name
+      content = @element.content.strip
+      
+      # Auto-detect format if parser_attr is auto
+      if parser_attr == 'auto'
+        parser_attr = content.start_with?('{') ? 'json' : 'eval'
+      end
+      
+      # Handle new 'eval' parser type as alias for 'expr'
+      parser_attr = 'expr' if parser_attr == 'eval'
+      
+      schema = case parser_attr.downcase
+      when 'json'
+        parse_json_schema(content)
+      when 'expr'
+        evaluate_expression_schema(content)
+      else
+        nil
+      end
+      
+      if schema
+        @context.tools ||= []
+        
+        # If name and description are provided as attributes, use them
+        if name
+          tool_def = {
+            'name' => name,
+            'description' => description
+          }
+          # Merge in the parsed schema (should include parameters, etc.)
+          tool_def.merge!(schema) if schema.is_a?(Hash)
+        elsif schema.is_a?(Hash) && schema['name']
+          # If the schema contains the full tool definition, use it directly
+          tool_def = schema
+        else
+          # No valid tool definition found
+          return
+        end
+        
+        @context.tools << tool_def
+      end
+    end
+    
+    def handle_tool_registration_with_name(tool_name)
+      description = get_attribute('description')
+      # Support both old 'lang' and new 'parser' attributes for compatibility
+      parser_attr = get_attribute('parser') || get_attribute('lang', 'auto')
       
       content = @element.content.strip
       
@@ -143,7 +194,7 @@ module Poml
         @context.tools ||= []
         # Store tool with string keys for JSON compatibility
         tool_def = {
-          'name' => name,
+          'name' => tool_name,
           'description' => description
         }
         # Merge in the parsed schema (should include parameters, etc.)
