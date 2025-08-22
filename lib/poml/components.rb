@@ -14,6 +14,8 @@ require_relative 'components/media'
 require_relative 'components/utilities'
 require_relative 'components/meta'
 require_relative 'components/template'
+require_relative 'components/output_schema'
+require_relative 'components/tool_definition'
 
 module Poml
   # Update the component mapping after all components are loaded
@@ -126,6 +128,14 @@ module Poml
     # Meta components
     meta: MetaComponent,
     Meta: MetaComponent,
+    'output-schema': OutputSchemaComponent,
+    'outputschema': OutputSchemaComponent,
+    OutputSchema: OutputSchemaComponent,
+    'tool-definition': ToolDefinitionComponent,
+    'tooldefinition': ToolDefinitionComponent,
+    ToolDefinition: ToolDefinitionComponent,
+    tool: ToolDefinitionComponent,  # 'tool' is an alias for 'tool-definition'
+    Tool: ToolDefinitionComponent,
     
     # Template components
     include: IncludeComponent,

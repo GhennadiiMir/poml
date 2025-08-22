@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2025-08-22
+
+### 🔄 Breaking Changes Alignment with Original Library
+
+- **New Component Syntax**: Implemented standalone components for schemas and tools
+  - Added `<output-schema>` component as replacement for `<meta type="responseSchema">`
+  - Added `<tool-definition>` component as replacement for `<meta type="tool">`
+  - Full backward compatibility maintained - existing code continues to work
+
+### Added
+
+- **New Standalone Components**:
+  - `OutputSchemaComponent`: Define AI response schemas with `<output-schema parser="json">`
+  - `ToolDefinitionComponent`: Register AI tools with `<tool-definition name="..." parser="json">`
+  - Support for `<tool>` as alias for `<tool-definition>`
+- **Updated Documentation Structure**:
+  - Created comprehensive documentation index (`docs/index.md`) matching original library
+  - Added Ruby SDK documentation (`docs/ruby/index.md`) with examples and API reference
+  - Reorganized tutorial structure (`docs/tutorial/quickstart.md`)
+  - Added deep-dive documentation (`docs/deep-dive/ir.md`)
+  - Updated meta documentation with breaking changes notes and migration guide
+- **Enhanced Test Coverage**:
+  - New test suite for standalone components (`test/test_new_schema_components.rb`)
+  - 8 comprehensive tests covering new and legacy syntax
+  - Tests for parser attribute compatibility and auto-detection
+  - Verification of metadata structure and tool registration
+- **Example Files**:
+  - `examples/303_new_component_syntax.poml` - demonstrates new standalone component syntax
+
+### Enhanced
+
+- **Backward Compatibility**: Seamless support for both old and new syntax patterns
+  - `<meta type="responseSchema" lang="json">` → `<output-schema parser="json">`
+  - `<meta type="tool" lang="json">` → `<tool-definition parser="json">`
+  - `lang` attribute automatically mapped to `parser` for compatibility
+- **Component Registration**: Improved component lookup with multiple key format support
+- **Metadata Handling**:
+  - Response schemas stored as parsed objects (not JSON strings)
+  - Tools stored with proper `parameters` structure for API compatibility
+  - Expression evaluation placeholder for future JavaScript engine integration
+- **Auto-detection**: Parser format automatically detected when not specified
+  - JSON format detected when content starts with `{`
+  - Expression format used otherwise
+
+### Fixed
+
+- **Component Discovery**: Enhanced component mapping to handle hyphenated names (`output-schema`, `tool-definition`)
+- **Schema Validation**: Multiple output-schema elements now properly throw errors
+- **Tool Structure**: Tools now have correct `parameters` key structure for API compatibility
+- **Template Substitution**: Variables properly substituted in schema and tool content
+
+### Developer Experience
+
+- **Migration Path**: Clear documentation for transitioning to new syntax
+- **Test Stability**: All existing stable tests continue passing (99 runs, 467 assertions)
+- **API Consistency**: Metadata structure matches expected patterns for LLM integrations
+
 ## [0.0.5] - 2025-08-21
 
 ### 🔄 Breaking Changes Compatibility

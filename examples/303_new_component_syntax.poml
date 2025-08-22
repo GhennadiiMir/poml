@@ -1,0 +1,45 @@
+<poml>
+  <!-- New syntax using standalone components -->
+  <output-schema parser="json">
+    {
+      "type": "object",
+      "properties": {
+        "analysis": {
+          "type": "object",
+          "properties": {
+            "sentiment": { "type": "string", "enum": ["positive", "negative", "neutral"] },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "key_themes": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["sentiment", "confidence", "key_themes"]
+        },
+        "summary": { "type": "string" }
+      },
+      "required": ["analysis", "summary"]
+    }
+  </output-schema>
+
+  <tool-definition name="search_web" description="Search the web for information" parser="json">
+    {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Search query" },
+        "max_results": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 }
+      },
+      "required": ["query"]
+    }
+  </tool-definition>
+
+  <role>Expert Text Analyst</role>
+  
+  <task>
+    Analyze the provided text and return structured insights including sentiment analysis, 
+    key themes, and a summary. Use the search_web tool if you need additional context.
+  </task>
+
+  <p>Text to analyze: "The new product launch exceeded all expectations with overwhelmingly positive customer feedback and record-breaking sales numbers."</p>
+
+  <output-format>
+    Return your analysis in the structured format defined by the output schema.
+  </output-format>
+</poml>

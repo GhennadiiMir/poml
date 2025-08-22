@@ -162,7 +162,12 @@ module Poml
     COMPONENT_MAPPING = {}
 
     def self.render_element(element, context)
-      component_class = COMPONENT_MAPPING[element.tag_name] || TextComponent
+      # Try to find component using multiple key formats for compatibility
+      tag_name = element.tag_name
+      component_class = COMPONENT_MAPPING[tag_name] || 
+                       COMPONENT_MAPPING[tag_name.to_s] || 
+                       COMPONENT_MAPPING[tag_name.to_sym] ||
+                       TextComponent
       component = component_class.new(element, context)
       component.render
     end

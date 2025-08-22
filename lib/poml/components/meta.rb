@@ -86,7 +86,7 @@ module Poml
       
       # Auto-detect format if parser_attr is auto
       if parser_attr == 'auto'
-        parser_attr = content.start_with?('{') ? 'json' : 'expr'
+        parser_attr = content.start_with?('{') ? 'json' : 'eval'
       end
       
       # Handle new 'eval' parser type as alias for 'expr'
@@ -102,6 +102,11 @@ module Poml
       end
       
       if schema
+        # Check if there's already a response schema defined
+        if @context.response_schema
+          raise Poml::Error, "Multiple response schemas are not allowed. Only one response schema per document is supported."
+        end
+        
         # Store the schema directly for simplicity
         @context.response_schema = schema
       end
@@ -119,7 +124,7 @@ module Poml
       
       # Auto-detect format if parser_attr is auto
       if parser_attr == 'auto'
-        parser_attr = content.start_with?('{') ? 'json' : 'expr'
+        parser_attr = content.start_with?('{') ? 'json' : 'eval'
       end
       
       # Handle new 'eval' parser type as alias for 'expr'

@@ -3,6 +3,103 @@ require_relative "test_helper"
 class TestSchemaCompatibility < Minitest::Test
   include TestHelper
 
+  def test_output_schema_new_component_syntax
+    markup = <<~POML
+      <poml>
+        <output-schema parser="json">
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "age": { "type": "number" }
+            },
+            "required": ["name"]
+          }
+        </output-schema>
+        <p>Test content</p>
+      </poml>
+    POML
+
+    result = Poml.process(markup: markup)
+    
+    assert result['metadata']['response_schema']
+    assert_equal "object", result['metadata']['response_schema']['type']
+    assert result['metadata']['response_schema']['properties']
+    assert_includes result['content'], "Test content"
+  end
+
+  def test_tool_definition_new_component_syntax
+    markup = <<~POML
+      <poml>
+        <tool-definition name="calculate" description="Perform calculations" parser="json">
+          {
+            "type": "object",
+            "properties": {
+              "operation": { "type": "string" },
+              "a": { "type": "number" },
+              "b": { "type": "number" }
+            },
+            "required": ["operation", "a", "b"]
+          }
+        </tool-definition>
+        <p>Test content</p>
+      </poml>
+    POML
+
+    result = Poml.process(markup: markup)
+    
+    assert result['metadata']['tools']
+    assert_equal 1, result['metadata']['tools'].length
+    
+    tool = result['metadata']['tools'].first
+    assert_equal "calculate", tool['name']
+    assert_equal "Perform calculations", tool['description']
+    assert tool['parameters']
+  end
+
+  def test_tool_alias_syntax
+    markup = <<~POML
+      <poml>
+        <tool name="search" description="Search for information" parser="json">
+          {
+            "type": "object",
+            "properties": {
+              "query": { "type": "string" }
+            },
+            "required": ["query"]
+          }
+        </tool>
+        <p>Test content</p>
+      </poml>
+    POML
+
+    result = Poml.process(markup: markup)
+    
+    assert result['metadata']['tools']
+    assert_equal 1, result['metadata']['tools'].length
+    
+    tool = result['metadata']['tools'].first
+    assert_equal "search", tool['name']
+    assert_equal "Search for information", tool['description']
+  end
+
+  def test_multiple_output_schemas_error
+    markup = <<~POML
+      <poml>
+        <output-schema parser="json">
+          { "type": "object" }
+        </output-schema>
+        <output-schema parser="json">
+          { "type": "string" }
+        </output-schema>
+      </poml>
+    POML
+
+    assert_raises(Poml::Error) do
+      Poml.process(markup: markup)
+    end
+  end
+
   def test_output_schema_with_old_lang_json_attribute
     markup = <<~POML
       <poml>

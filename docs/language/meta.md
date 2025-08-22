@@ -1,8 +1,19 @@
 # Meta
 
-The `<meta>` element provides metadata and configuration for POML documents. It allows you to specify version requirements, disable/enable components, define response schemas, register tools, and set runtime parameters.
+POML documents support several types of meta elements that control document behavior and configuration:
 
-## Basic Usage
+1. **The `<meta>` element** - Defines fundamental metadata about a POML file, such as version requirements and component control
+2. **Schema components** - `<output-schema>` defines structured response formats for AI models
+3. **Tool components** - `<tool-definition>` (or `<tool>`) registers callable functions for AI models  
+4. **Meta-like components** - Elements like `<stylesheet>`, `<runtime>` that affect prompt rendering
+
+**Breaking Changes Note**: The original POML library has updated from `<meta type="responseSchema">` to `<output-schema>` and from `<meta type="tool">` to `<tool-definition>`. The Ruby gem supports both syntaxes for compatibility, but new projects should use the newer components.
+
+## The `<meta>` Element
+
+The `<meta>` element provides core metadata and configuration for POML documents. It allows you to specify version requirements and disable/enable components.
+
+### Basic Usage
 
 Meta elements are typically placed at the beginning of a POML document and don't produce any visible output. One POML file can have multiple `<meta>` elements at any position, but they should be used carefully to avoid conflicts.
 
@@ -13,29 +24,40 @@ Meta elements are typically placed at the beginning of a POML document and don't
 </poml>
 ```
 
-### Meta Element Types
+### Meta Element Usage
 
-Meta elements fall into two categories based on whether they include a `type` attribute:
+Meta elements are used for general document configuration:
 
-**Without type attribute** - Used for general document configuration:
 - Version control (`minVersion`, `maxVersion`)
 - Component management (`components`)
-
-**With type attribute** - Used for specific functionalities:
-- `type="responseSchema"` - Defines structured output format for AI responses
-- `type="tool"` - Registers callable functions for AI models
-- `type="runtime"` - Sets language model execution parameters
 
 ## Response Schema
 
 Response schemas define the expected structure of AI-generated responses, ensuring that language models return data in a predictable, parsable format. This transforms free-form text generation into structured data generation.
 
-### JSON Schema Format
+### New Syntax (Recommended)
 
-Use the `lang="json"` attribute to specify JSON Schema format:
+Use the standalone `<output-schema>` component with the `parser` attribute:
 
 ```xml
-<meta type="responseSchema" lang="json">
+<output-schema parser="json">
+  {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" },
+      "age": { "type": "number" }
+    },
+    "required": ["name"]
+  }
+</output-schema>
+```
+
+### Legacy Syntax (Supported)
+
+The older `<meta type="responseSchema">` syntax is still supported:
+
+```xml
+<meta type="responseSchema" parser="json">
   {
     "type": "object",
     "properties": {
@@ -47,32 +69,50 @@ Use the `lang="json"` attribute to specify JSON Schema format:
 </meta>
 ```
 
-### Expression Format
+### JSON Schema Format
 
-Use the `lang="expr"` attribute (or omit it for auto-detection) to evaluate JavaScript expressions that return schemas:
+Use the `parser="json"` attribute to specify JSON Schema format. The schema must be a valid JSON Schema object:
 
 ```xml
-<meta type="responseSchema" lang="expr">
+<output-schema parser="json">
+  {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" },
+      "age": { "type": "number" }
+    },
+    "required": ["name"]
+  }
+</output-schema>
+```
+
+### Expression Format
+
+Use the `parser="eval"` attribute (or `parser="expr"`) to evaluate JavaScript expressions that return schemas:
+
+```xml
+<output-schema parser="eval">
   z.object({
     name: z.string(),
     age: z.number().optional()
   })
-</meta>
+</output-schema>
 ```
 
-When `lang` is omitted, POML auto-detects the format:
+**Note**: Expression evaluation is not fully implemented in the Ruby gem and will return a placeholder indicating the limitation.
+
+When `parser` is omitted, POML auto-detects the format:
+
 - If the content starts with `{`, it's treated as JSON
 - Otherwise, it's treated as an expression
 
-### Expression Evaluation in Schemas
-
-#### JSON Schema with Template Expressions
+### Template Expressions in Schemas
 
 JSON schemas support template expressions using `{{ }}` syntax:
 
 ```xml
 <let name="maxAge" value="100" />
-<meta type="responseSchema" lang="json">
+<output-schema parser="json">
   {
     "type": "object",
     "properties": {
@@ -84,27 +124,135 @@ JSON schemas support template expressions using `{{ }}` syntax:
       }
     }
   }
-</meta>
+</output-schema>
 ```
 
-#### Expression Format with JavaScript Evaluation
+**Important limitations:**
 
-Expression schemas are evaluated as JavaScript code with access to context variables and the `z` (Zod) variable:
+- Only one `output-schema` element is allowed per document. Multiple response schemas will result in an error.
+
+## Tool Registration
+
+Tool registration enables AI models to interact with external functions during conversation. Tools are function definitions that tell the AI model what functions are available, what parameters they expect, and what they do.
+
+### New Syntax (Recommended)
+
+Use the standalone `<tool-definition>` component (or its alias `<tool>`):
 
 ```xml
-<let name="fields" value='["name", "email", "age"]' />
-<meta type="responseSchema" lang="expr">
-  z.object(
-    Object.fromEntries(fields.map(f => [f, z.string()]))
-  )
+<tool-definition name="getWeather" description="Get weather information" parser="json">
+  {
+    "type": "object",
+    "properties": {
+      "location": { "type": "string" },
+      "unit": { 
+        "type": "string", 
+        "enum": ["celsius", "fahrenheit"] 
+      }
+    },
+    "required": ["location"]
+  }
+</tool-definition>
+```
+
+### Legacy Syntax (Supported)
+
+The older `<meta type="tool">` syntax is still supported:
+
+```xml
+<meta type="tool" name="getWeather" description="Get weather information" parser="json">
+  {
+    "type": "object",
+    "properties": {
+      "location": { "type": "string" },
+      "unit": { 
+        "type": "string", 
+        "enum": ["celsius", "fahrenheit"] 
+      }
+    },
+    "required": ["location"]
+  }
 </meta>
 ```
 
+### Tool Definition Examples
+
+#### JSON Schema Format
+
+```xml
+<tool-definition name="calculate" description="Perform mathematical calculations" parser="json">
+  {
+    "type": "object",
+    "properties": {
+      "operation": { "type": "string", "enum": ["add", "subtract", "multiply", "divide"] },
+      "a": { "type": "number" },
+      "b": { "type": "number" }
+    },
+    "required": ["operation", "a", "b"]
+  }
+</tool-definition>
+```
+
+#### Expression Format
+
+```xml
+<tool-definition name="search" description="Search for information" parser="eval">
+  z.object({
+    query: z.string(),
+    limit: z.number().min(1).max(10).default(5)
+  })
+</tool-definition>
+```
+
+### Template Expressions in Tools
+
+Both schemas and tools support template expressions in their attributes:
+
+```xml
+<let name="toolName" value="calculate" />
+<let name="toolDesc" value="Perform mathematical calculations" />
+
+<tool-definition name="{{toolName}}" description="{{toolDesc}}" parser="json">
+  {
+    "type": "object",
+    "properties": {
+      "operation": { "type": "string" }
+    }
+  }
+</tool-definition>
+```
+
+**Required attributes for tools:**
+
+- **name**: Tool identifier (required)
+- **description**: Tool description (optional but recommended)
+- **parser**: Schema parser, either "json" or "eval" (optional, auto-detected based on content)
+
+## Compatibility Notes
+
+### Attribute Migration
+
+The Ruby gem supports both old and new attribute names for backward compatibility:
+
+- `lang="json"` → `parser="json"` (both supported)
+- `lang="expr"` → `parser="eval"` (both supported)
+
+### Component Migration
+
+The Ruby gem supports both old and new component structures:
+
+- `<meta type="responseSchema">` → `<output-schema>` (both supported)
+- `<meta type="tool">` → `<tool-definition>` (both supported)
+
+For new projects, use the newer standalone components (`<output-schema>`, `<tool-definition>`) as they provide better clarity and follow the updated POML specification.
+
 The expression can return either:
+
 - A Zod schema object (detected by the presence of `_def` property)
 - A plain JavaScript object treated as JSON Schema
 
 **Important limitations:**
+
 - Only one `responseSchema` meta element is allowed per document. Multiple response schemas will result in an error.
 - Response schemas cannot be used together with tool definitions in the same document. You must choose between structured responses or tool calling capabilities.
 
@@ -181,6 +329,7 @@ Tool schemas support the same evaluation modes as response schemas:
 In expression mode, the `z` variable is automatically available for constructing Zod schemas, and you have direct access to all context variables.
 
 **Required attributes for tools:**
+
 - **name**: Tool identifier (required)
 - **description**: Tool description (optional but recommended)
 - **lang**: Schema language, either "json" or "expr" (optional, auto-detected based on content)
@@ -210,6 +359,7 @@ All attributes except `type` are passed as runtime parameters. Common parameters
 - **seed**: For deterministic outputs (integer value)
 
 The full parameter list depends on whether you're using standard text generation or structured data generation:
+
 - [Text generation parameters](https://ai-sdk.dev/docs/ai-sdk-core/generating-text) - Standard text generation
 - [Structured data parameters](https://ai-sdk.dev/docs/ai-sdk-core/generating-structured-data) - When using response schemas
 
