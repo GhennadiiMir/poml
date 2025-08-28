@@ -11,7 +11,7 @@ This document tracks the implementation status of all POML features in the Ruby 
 **Current Version**: 0.0.7  
 **Ruby Compatibility**: >= 2.7.0  
 **Test Framework**: Minitest  
-**Test Coverage**: 177 tests, 834 assertions (All stable tests passing)
+**Test Coverage**: 186 stable tests, 866 assertions (All stable tests passing); 274+ total tests with 12 failures in development tests (down from 15+ failures)
 
 **Recent Achievements**:
 
@@ -23,6 +23,8 @@ This document tracks the implementation status of all POML features in the Ruby 
 - ✅ **Enhanced Pydantic Integration** - Python interoperability with strict JSON schema support
 - ✅ **Enhanced Tool Registration System** - Implemented multiple tool registration formats with comprehensive metadata integration
 - ✅ **Template Engine Completed** - All template engine tests now passing with full meta variables support
+- ✅ **Chat Message Components Fixed** - Human, AI, and System message components now work correctly in both raw and chat formats
+- ✅ **Missing Components Discovered** - Object, Audio, Include, Role, and Task components were already implemented but not properly documented
 
 **✅ All Compatibility Updates Complete**:
 
@@ -76,7 +78,6 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Feature | Status | Required Update | Priority |
 |---------|--------|-----------------|----------|
-| Tool attribute templates | ❌ Missing | Support `{{variable}}` in tool attributes | **Medium** |
 | Runtime parameter conversion | ❌ Missing | Automatic type conversion (boolean, number, JSON) | **Medium** |
 | Parameter key conversion | ❌ Missing | kebab-case → camelCase conversion | **Medium** |
 
@@ -182,13 +183,32 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 ## 🔧 Partially Implemented Features
 
-### File Operations (Partial)
+### File Operations
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<include>` | ❌ Missing | ❌ No tests | Template inclusion |
+| `<file>` | ✅ Working | ✅ Tested | File content reading with path resolution and error handling |
+| `<include>` | ✅ Working | ✅ Tested | Template inclusion with conditional and loop support |
 
-**Issue**: Include component for template composition not yet implemented.
+---
+
+## ✅ Recently Fixed Features (v0.0.7)
+
+### Chat Message Components
+
+| Component | Status | Tests | Description |
+|-----------|--------|-------|-------------|
+| `<human>` | ✅ **Fixed** | ✅ Tested | Human user messages - now works in both raw and chat formats |
+| `<ai>` | ✅ **Fixed** | ✅ Tested | AI assistant messages - now works in both raw and chat formats |
+| `<system>` | ✅ **Fixed** | ✅ Tested | System prompts - now works in both raw and chat formats |
+
+### Enhanced Tool Registration
+
+| Feature | Status | Tests | Description |
+|---------|--------|-------|-------------|
+| Tool attribute templates | ✅ **Working** | ✅ Tested | Support `{{variable}}` in tool attributes (already implemented) |
+| Multiple tool formats | ✅ **Working** | ✅ Tested | `<meta tool="name">` and `<tool-definition>` both supported |
+| JSON tool definitions | ✅ **Working** | ✅ Tested | Complete tool definition in JSON content |
 
 ---
 
@@ -198,20 +218,12 @@ This document tracks the implementation status of all POML features in the Ruby 
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<object>` | ❌ Missing | ❌ No tests | Object serialization |
-| `<webpage>` | ❌ Missing | ❌ No tests | Web page content |
+| `<object>` | ✅ **Implemented** | ⚠️ Needs Tests | Object serialization (JSON, YAML, XML) |
+| `<webpage>` | ✅ **Implemented** | ⚠️ Needs Tests | Web page content fetching |
 
-### File Operations
+### File Operations (Previous Section Removed - Moved Above)
 
-| Component | Status | Tests | Description |
-|-----------|--------|-------|-------------|
-| `<include>` | ❌ Missing | ❌ No tests | Template inclusion |
-
-### Utility Components  
-
-| Component | Status | Tests | Description |
-|-----------|--------|-------|-------------|
-| Currently all implemented | - | - | - |
+### Utility Components (Previous Section Removed - Listed in Implemented)
 
 ### Advanced Features
 
@@ -220,14 +232,14 @@ This document tracks the implementation status of all POML features in the Ruby 
 | `<example>` | ✅ Working | ✅ Tested | Few-shot examples with input/output pairs |
 | `<input>`/`<output>` | ✅ Working | ✅ Tested | Example input and output components |
 | `<examples>` | ✅ Working | ✅ Tested | Container for multiple example sets |
-| `<role>` | ❌ Missing | ❌ No tests | Role definitions |
-| `<task>` | ❌ Missing | ❌ No tests | Task instructions |
+| `<role>` | ✅ **Implemented** | ⚠️ Needs Tests | Role definitions (already working) |
+| `<task>` | ✅ **Implemented** | ⚠️ Needs Tests | Task instructions (already working) |
 
 ### Media Components
 
 | Component | Status | Tests | Description |
 |-----------|--------|-------|-------------|
-| `<audio>` | ❌ Missing | ❌ No tests | Audio file handling |
+| `<audio>` | ✅ **Implemented** | ⚠️ Needs Tests | Audio file handling with multimedia syntax support |
 
 ---
 

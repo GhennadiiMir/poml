@@ -45,7 +45,7 @@ class TestUtilityComponents < Minitest::Test
   end
 
   def test_conversation_component_with_messages
-    markup = '<conversation messages="[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi there!\"}]">Conv</conversation>'
+    markup = '<conversation messages="[{\"speaker\": \"human\", \"content\": \"Hello\"}, {\"speaker\": \"ai\", \"content\": \"Hi there!\"}]">Conv</conversation>'
     result = Poml.process(markup: markup, format: 'raw')
     
     assert_includes result, 'Hello'

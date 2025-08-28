@@ -12,13 +12,12 @@ module Poml
           'role' => 'assistant',
           'content' => content
         }
-        # Return empty for raw format to avoid duplication
-        return ''
       end
       
       if xml_mode?
         render_as_xml('ai-msg', content, { speaker: 'ai' })
       else
+        # Always render content - let the renderer decide whether to use structured messages
         content
       end
     end
@@ -37,13 +36,12 @@ module Poml
           'role' => 'user',
           'content' => content
         }
-        # Return empty for raw format to avoid duplication
-        return ''
       end
       
       if xml_mode?
         render_as_xml('user-msg', content, { speaker: 'human' })
       else
+        # Always render content - let the renderer decide whether to use structured messages
         content
       end
     end
@@ -62,13 +60,12 @@ module Poml
           'role' => 'system',
           'content' => content
         }
-        # Return empty for raw format to avoid duplication
-        return ''
       end
       
       if xml_mode?
         render_as_xml('system-msg', content, { speaker: 'system' })
       else
+        # Always render content - let the renderer decide whether to use structured messages
         content
       end
     end
@@ -94,7 +91,7 @@ module Poml
     end
   end
 
-  # Conversation component for displaying chat conversations
+  # Conversation component for formatting chat messages (matches original POML API)
   class ConversationComponent < Component
     def render
       apply_stylesheet
@@ -124,7 +121,7 @@ module Poml
         render_conversation_markdown(messages)
       end
     end
-    
+
     private
     
     def apply_message_selection(messages, selection)
@@ -163,10 +160,11 @@ module Poml
       messages.each do |msg|
         speaker = msg['speaker'] || msg['role'] || 'human'
         content = msg['content'] || ''
-        result << "  <msg speaker=\"#{speaker}\">#{escape_xml(content)}</msg>"
+        result << "  <msg speaker="#{speaker}">#{escape_xml(content)}</msg>"
       end
       result << '</conversation>'
-      result.join("\n")
+      result.join("
+")
     end
     
     def render_conversation_markdown(messages)
@@ -187,7 +185,8 @@ module Poml
         end
         result << ""
       end
-      result.join("\n")
+      result.join("
+")
     end
     
     def escape_xml(text)

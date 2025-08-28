@@ -497,7 +497,7 @@ class PomlTest < Minitest::Test
     assert_includes result, 'child2'
     
     # Test conversation component with messages
-    markup = '<conversation messages="[{\"role\": \"user\", \"content\": \"Hi\"}, {\"role\": \"assistant\", \"content\": \"Hello\"}]">Conversation</conversation>'
+    markup = '<conversation messages="[{\"speaker\": \"human\", \"content\": \"Hi\"}, {\"speaker\": \"ai\", \"content\": \"Hello\"}]">Conversation</conversation>'
     result = Poml.process(markup: markup, format: 'raw')
     assert_includes result, 'Human:'
     assert_includes result, 'Hi'

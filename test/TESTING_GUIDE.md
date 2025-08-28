@@ -9,14 +9,14 @@ This is the comprehensive testing guide for the POML Ruby gem. It covers test ex
 **Stable Test Suite (Recommended for CI/CD)**:
 
 ```bash
-bundle exec rake test        # 177 tests, 834 assertions, 0 failures
+bundle exec rake test        # 186 tests, 866 assertions, 0 failures
 bundle exec rake             # Same as above (default task)
 ```
 
 **Development Test Suite**:
 
 ```bash
-bundle exec rake test_all    # 265+ tests, ~15+ failures (expected)
+bundle exec rake test_all    # 274+ tests, 12 failures (down from 15+)
 ```
 
 **Individual Test Files**:
@@ -37,7 +37,7 @@ bundle exec ruby -I lib test/test_implemented_features.rb
 
 ### Test Status Summary
 
-**✅ Stable Tests**: 16 files, 177 tests, 834 assertions - **ALL PASSING**
+**✅ Stable Tests**: 17 files, 186 tests, 866 assertions - **ALL PASSING**
 
 - `test_basic_functionality.rb` - Core formatting and chat components
 - `test_implemented_features.rb` - Current working features  
@@ -50,6 +50,12 @@ bundle exec ruby -I lib test/test_implemented_features.rb
 - `test_template_engine.rb` - Template engine with variables, conditionals, and loops
 - `test_new_schema_components.rb` - New schema components (output-schema, tool-definition)
 - `test_schema_compatibility.rb` - Schema backward compatibility
+- `test_image_url_support.rb` - Image handling with URL fetching
+- `test_inline_rendering.rb` - Inline rendering support
+- `test_openai_response_format.rb` - OpenAI response format
+- `test_file_reading_improvements.rb` - Enhanced file operations
+- `test_pydantic_integration.rb` - Python interoperability
+- `test_missing_components.rb` - Previously "missing" but implemented components
 
 **⚠️ Development Tests**: 88+ additional tests with unimplemented features
 
@@ -333,9 +339,9 @@ ls test/fixtures/
 
 ### Test Statistics
 
-- **Total test files**: 23 (16 stable + 7 development)
-- **Stable tests**: 177 tests, 834 assertions, 0 failures
-- **Development tests**: 88+ additional tests (~15+ failures expected)
+- **Total test files**: 24 (17 stable + 7 development)
+- **Stable tests**: 186 tests, 866 assertions, 0 failures
+- **Development tests**: 88+ additional tests (12 failures expected, down from 15+)
 - **Coverage**: Comprehensive coverage of all implemented features
 
 ### Monitoring

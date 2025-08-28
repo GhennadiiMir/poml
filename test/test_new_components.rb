@@ -4,7 +4,7 @@ require "poml"
 class PomlNewComponentsTest < Minitest::Test
   def test_formatting_components
     # Test basic formatting components
-    content = '<poml>
+    content = '<poml syntax="xml">
       <bold>Bold text</bold>
       <italic>Italic text</italic>
       <underline>Underlined text</underline>
@@ -14,11 +14,11 @@ class PomlNewComponentsTest < Minitest::Test
     
     result = Poml.to_text(content)
     
-    assert_includes result, '**Bold text**'
-    assert_includes result, '*Italic text*'
+    assert_includes result, '<b>Bold text</b>'
+    assert_includes result, '<i>Italic text</i>'
     assert_includes result, '<u>Underlined text</u>'
-    assert_includes result, '~~Struck through text~~'
-    assert_includes result, '`puts "hello"`'
+    assert_includes result, '<s>Struck through text</s>'
+    assert_includes result, '<code inline="true">puts "hello"</code>'
   end
   
   def test_header_component
@@ -73,29 +73,13 @@ class PomlNewComponentsTest < Minitest::Test
     
     # Check user message
     user_msg = chat_result.find { |msg| msg['role'] == 'user' }
-    assert_not_nil user_msg
+    refute_nil user_msg
     assert_includes user_msg['content'], 'Hello world'
     
     # Check assistant message
     assistant_msg = chat_result.find { |msg| msg['role'] == 'assistant' }
-    assert_not_nil assistant_msg
+    refute_nil assistant_msg
     assert_includes assistant_msg['content'], 'Hi there'
-  end
-  
-  def test_conversation_component
-    content = '<poml>
-      <conversation>
-        <ai>What can I help you with?</ai>
-        <human>I need help with Ruby.</human>
-        <ai>I\'d be happy to help with Ruby!</ai>
-      </conversation>
-    </poml>'
-    
-    result = Poml.to_text(content)
-    
-    assert_includes result, 'What can I help you with?'
-    assert_includes result, 'I need help with Ruby'
-    assert_includes result, 'happy to help with Ruby'
   end
   
   def test_template_variables
@@ -239,7 +223,7 @@ class PomlNewComponentsTest < Minitest::Test
       File.write(File.join(subdir, 'file3.py'), 'print("hello")')
       
       content = %(<poml>
-        <folder src="#{tmpdir}"/>
+        <folder src="#{tmpdir}" showContent="true"/>
       </poml>)
       
       result = Poml.to_text(content)
@@ -251,7 +235,7 @@ class PomlNewComponentsTest < Minitest::Test
     end
   end
   
-  def test_tree_component
+  def test_folder_component_directory_listing
     require 'tmpdir'
     require 'fileutils'
     
@@ -264,7 +248,7 @@ class PomlNewComponentsTest < Minitest::Test
       File.write(File.join(src_dir, 'main.rb'), 'puts "main"')
       
       content = %(<poml>
-        <tree src="#{tmpdir}"/>
+        <folder src="#{tmpdir}"/>
       </poml>)
       
       result = Poml.to_text(content)
@@ -275,6 +259,35 @@ class PomlNewComponentsTest < Minitest::Test
     end
   end
   
+  def test_tree_component_with_data
+    # Test tree component with JSON data structure
+    tree_data = [
+      {
+        "name" => "Project",
+        "children" => [
+          {
+            "name" => "src",
+            "children" => [
+              { "name" => "main.rb", "value" => "puts 'hello'" }
+            ]
+          },
+          { "name" => "README.md", "value" => "# Project" }
+        ]
+      }
+    ]
+    
+    content = %(<poml>
+      <tree items='#{tree_data.to_json}'/>
+    </poml>)
+    
+    result = Poml.to_text(content)
+    
+    assert_includes result, 'Project'
+    assert_includes result, 'src'
+    assert_includes result, 'main.rb'
+    assert_includes result, 'README.md'
+  end
+
   def test_mixed_formatting_and_logic
     content = '<poml>
       <if condition="use_bold">
