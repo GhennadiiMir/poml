@@ -28,9 +28,12 @@ module Poml
         # Apply stylesheet text transformation
         display_caption = apply_text_transform(display_caption)
         
-        return content + "\n\n" if display_caption.empty?
+        if display_caption.empty?
+          result = content + "\n\n"
+          return inline? ? result.strip : result
+        end
 
-        case caption_style
+        result = case caption_style
         when 'header'
           header_prefix = '#' * @context.header_level
           "#{header_prefix} #{display_caption}\n\n#{content}\n\n"
@@ -44,6 +47,8 @@ module Poml
           header_prefix = '#' * @context.header_level
           "#{header_prefix} #{display_caption}\n\n#{content}\n\n"
         end
+        
+        inline? ? result.strip : result
       end
     end
   end

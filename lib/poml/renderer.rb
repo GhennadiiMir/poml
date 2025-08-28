@@ -15,6 +15,8 @@ module Poml
         render_dict(elements)
       when 'openai_chat'
         render_openai_chat(elements)
+      when 'openaiResponse'
+        render_openai_response(elements)
       when 'langchain'
         render_langchain(elements)
       when 'pydantic'
@@ -80,6 +82,31 @@ module Poml
       end
     end
 
+    def render_openai_response(elements)
+      # OpenAI Response format - standardized AI response structure
+      # Different from openai_chat which focuses on conversation messages
+      content = render_raw(elements)
+      
+      response = {
+        'content' => content.strip,
+        'type' => 'assistant'
+      }
+      
+      # Include metadata if available
+      metadata = {}
+      metadata['variables'] = @context.variables if @context.variables && !@context.variables.empty?
+      metadata['response_schema'] = @context.response_schema if @context.response_schema
+      metadata['tools'] = @context.tools if @context.tools && !@context.tools.empty?
+      metadata['runtime_parameters'] = @context.runtime_parameters if @context.runtime_parameters && !@context.runtime_parameters.empty?
+      
+      # Include custom metadata (title, description, etc.)
+      metadata.merge!(@context.custom_metadata) if @context.custom_metadata && !@context.custom_metadata.empty?
+      
+      response['metadata'] = metadata unless metadata.empty?
+      
+      response
+    end
+
     def render_langchain(elements)
       content = render_raw(elements)
       {
@@ -89,12 +116,91 @@ module Poml
     end
 
     def render_pydantic(elements)
-      # Simplified pydantic-like structure
-      {
-        'prompt' => render_raw(elements),
-        'variables' => @context.variables,
-        'chat_enabled' => @context.chat
+      # Enhanced pydantic format with Python interoperability features
+      raw_content = render_raw(elements)
+      
+      # Enhanced Pydantic-compatible structure
+      pydantic_output = {
+        'content' => raw_content,
+        'variables' => @context.variables || {},
+        'chat_enabled' => @context.chat,
+        'metadata' => {
+          'format' => 'pydantic',
+          'version' => '1.0',
+          'python_compatible' => true,
+          'strict_json_schema' => true
+        }
       }
+      
+      # Add response schema if available (from output-schema components)
+      if @context.response_schema
+        pydantic_output['schemas'] = [make_schema_strict(@context.response_schema)]
+      else
+        pydantic_output['schemas'] = []
+      end
+      
+      # Add tools if available (from tool-definition components)
+      if @context.tools && !@context.tools.empty?
+        pydantic_output['tools'] = @context.tools.map { |tool| format_tool_for_pydantic(tool) }
+      else
+        pydantic_output['tools'] = []
+      end
+      
+      # Add custom metadata if available (from meta components)
+      if @context.custom_metadata && !@context.custom_metadata.empty?
+        pydantic_output['custom_metadata'] = @context.custom_metadata
+      else
+        pydantic_output['custom_metadata'] = {}
+      end
+      
+      pydantic_output
+    end
+    
+    private
+    
+    def make_schema_strict(schema)
+      # Convert schema to strict JSON schema format (Pydantic compatible)
+      return schema unless schema.is_a?(Hash)
+      
+      strict_schema = schema.dup
+      
+      if strict_schema['type'] == 'object'
+        strict_schema['additionalProperties'] = false
+        
+        # Make all properties required if not specified
+        if strict_schema['properties'] && !strict_schema['required']
+          strict_schema['required'] = strict_schema['properties'].keys
+        end
+        
+        # Recursively process nested objects
+        if strict_schema['properties']
+          strict_schema['properties'] = strict_schema['properties'].transform_values do |prop|
+            make_schema_strict(prop)
+          end
+        end
+      elsif strict_schema['type'] == 'array' && strict_schema['items']
+        strict_schema['items'] = make_schema_strict(strict_schema['items'])
+      end
+      
+      # Remove null defaults for strict compatibility
+      strict_schema.delete('default') if strict_schema['default'].nil?
+      
+      strict_schema
+    end
+    
+    def format_tool_for_pydantic(tool)
+      # Format tool definition for Pydantic compatibility
+      formatted_tool = {
+        'name' => tool['name'],
+        'description' => tool['description']
+      }
+      
+      if tool['parameters']
+        # Convert parameters to Pydantic-compatible format
+        formatted_tool['parameters'] = make_schema_strict(tool['parameters'])
+      end
+      
+      formatted_tool
     end
 
     def parse_chat_messages(content)

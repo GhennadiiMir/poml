@@ -9,6 +9,7 @@ module Poml
       
       src = get_attribute('src')
       records_attr = get_attribute('records')
+      data_attr = get_attribute('data')  # Support 'data' attribute as alias for 'records'
       _columns_attr = get_attribute('columns')  # Not used but may be needed for future features
       parser = get_attribute('parser', 'auto')
       syntax = get_attribute('syntax')
@@ -22,6 +23,8 @@ module Poml
         load_table_data(src, parser)
       elsif records_attr
         parse_records_attribute(records_attr)
+      elsif data_attr
+        parse_records_attribute(data_attr)
       elsif @element.children.any? { |child| child.tag_name == :tr }
         # Handle HTML-style table markup
         parse_html_table_children
@@ -33,12 +36,19 @@ module Poml
       data = apply_selection(data, selected_columns, selected_records, max_records, max_columns)
       
       # Check syntax preference
-      if syntax == 'tsv' || syntax == 'csv'
+      result = if syntax == 'tsv' || syntax == 'csv'
         render_table_raw(data, syntax)
       elsif xml_mode?
         render_table_xml(data)
       else
         render_table_markdown(data)
+      end
+      
+      # Apply inline rendering if requested
+      if inline? && !xml_mode?
+        result.strip
+      else
+        result
       end
     end
     
@@ -104,7 +114,7 @@ module Poml
     end
     
     def parse_json_file(file_path)
-      content = File.read(file_path)
+      content = read_file_with_encoding(file_path)
       records = JSON.parse(content)
       
       # Extract columns from first record if it's an array of objects
@@ -119,7 +129,7 @@ module Poml
     
     def parse_jsonl_file(file_path)
       records = []
-      File.readlines(file_path).each do |line|
+      read_file_lines_with_encoding(file_path).each do |line|
         records << JSON.parse(line.strip) unless line.strip.empty?
       end
       
@@ -410,15 +420,27 @@ module Poml
     def render
       apply_stylesheet
       
-      data = get_attribute('data')
+      data_attr = get_attribute('data')
       syntax = get_attribute('syntax', 'json')
       
-      return '' unless data
+      return '' unless data_attr
+      
+      # Parse data if it's a JSON string
+      data = if data_attr.is_a?(String) && data_attr.start_with?('{', '[')
+        begin
+          JSON.parse(data_attr)
+        rescue JSON::ParserError
+          data_attr  # Use as-is if parsing fails
+        end
+      else
+        data_attr
+      end
       
       if xml_mode?
         render_as_xml('obj', serialize_data(data, syntax))
       else
-        serialize_data(data, syntax)
+        result = serialize_data(data, syntax)
+        inline? ? result.strip : result
       end
     end
     
@@ -543,7 +565,7 @@ module Poml
           return "[Webpage: File not found: #{file_path}]"
         end
         
-        html_content = File.read(full_path)
+        html_content = read_file_with_encoding(full_path)
         process_html_content(html_content, selector, extract_text)
       rescue => e
         "[Webpage: Error reading file #{file_path}: #{e.message}]"
@@ -631,13 +653,207 @@ module Poml
       apply_stylesheet
       
       src = get_attribute('src')
+      base64 = get_attribute('base64')
       alt = get_attribute('alt', '')
-      syntax = get_attribute('syntax', 'text')
+      syntax = get_attribute('syntax', 'multimedia')
+      max_width = get_attribute('maxWidth')
+      max_height = get_attribute('maxHeight')
+      resize = get_attribute('resize')
+      image_type = get_attribute('type')
+      position = get_attribute('position', 'here')
 
-      if syntax == 'multimedia'
-        "[Image: #{src}]#{alt.empty? ? '' : " (#{alt})"}"
+      # Handle missing src and base64
+      unless src || base64
+        return handle_error("no src or base64 specified")
+      end
+
+      begin
+        # Process the image
+        if src
+          if url?(src)
+            content = fetch_image_from_url(src, max_width, max_height, resize, image_type)
+          else
+            content = read_local_image(src, max_width, max_height, resize, image_type)
+          end
+        elsif base64
+          content = process_base64_image(base64, max_width, max_height, resize, image_type)
+        end
+
+        # Render based on syntax and XML mode
+        if xml_mode?
+          attributes = {}
+          attributes[:src] = src if src
+          attributes[:base64] = base64 if base64
+          attributes[:alt] = alt unless alt.empty?
+          attributes[:type] = image_type if image_type
+          attributes[:position] = position
+          render_as_xml('img', content || '', attributes)
+        else
+          if syntax == 'multimedia'
+            # Show image reference with content info
+            image_ref = src || '[embedded image]'
+            result = "[Image: #{image_ref}]"
+            result += " (#{alt})" unless alt.empty?
+            result += "\n#{content}" if content && content.is_a?(String) && content.start_with?('data:')
+            result
+          else
+            # Text mode - show alt text or simple reference
+            alt.empty? ? "[Image: #{src || 'embedded'}]" : alt
+          end
+        end
+      rescue => e
+        handle_error("error processing image: #{e.message}")
+      end
+    end
+
+    private
+
+    def url?(src)
+      src && src.match?(/^https?:\/\//i)
+    end
+
+    def fetch_image_from_url(url, max_width = nil, max_height = nil, resize = nil, image_type = nil)
+      require 'net/http'
+      require 'uri'
+      require 'base64'
+
+      uri = URI.parse(url)
+      
+      # Configure HTTP client
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true if uri.scheme == 'https'
+      http.read_timeout = 10
+      http.open_timeout = 5
+
+      # Create request with appropriate headers
+      request = Net::HTTP::Get.new(uri.request_uri)
+      request['User-Agent'] = 'POML Ruby/1.0'
+      request['Accept'] = 'image/*'
+
+      # Fetch the image
+      response = http.request(request)
+
+      unless response.code == '200'
+        raise "HTTP #{response.code}: #{response.message}"
+      end
+
+      # Process the image data
+      image_data = response.body
+      content_type = response['content-type'] || detect_image_type(image_data)
+      
+      # Apply processing if requested
+      if max_width || max_height || resize || image_type
+        image_data = process_image_data(image_data, content_type, max_width, max_height, resize, image_type)
+      end
+
+      # Return base64 encoded data URL
+      base64_data = Base64.strict_encode64(image_data)
+      mime_type = image_type ? "image/#{image_type}" : content_type
+      "data:#{mime_type};base64,#{base64_data}"
+    rescue => e
+      raise "Failed to fetch image from URL #{url}: #{e.message}"
+    end
+
+    def read_local_image(file_path, max_width = nil, max_height = nil, resize = nil, image_type = nil)
+      require 'base64'
+
+      # Resolve file path
+      full_path = if file_path.start_with?('/')
+        file_path
       else
-        alt.empty? ? "[Image: #{src}]" : alt
+        base_path = @context.source_path ? File.dirname(@context.source_path) : Dir.pwd
+        File.join(base_path, file_path)
+      end
+
+      unless File.exist?(full_path)
+        raise "File not found: #{file_path}"
+      end
+
+      # Read image data
+      image_data = File.read(full_path, mode: 'rb')
+      content_type = detect_image_type_from_extension(full_path) || detect_image_type(image_data)
+
+      # Apply processing if requested
+      if max_width || max_height || resize || image_type
+        image_data = process_image_data(image_data, content_type, max_width, max_height, resize, image_type)
+      end
+
+      # Return base64 encoded data URL
+      base64_data = Base64.strict_encode64(image_data)
+      mime_type = image_type ? "image/#{image_type}" : content_type
+      "data:#{mime_type};base64,#{base64_data}"
+    rescue => e
+      raise "Failed to read local image #{file_path}: #{e.message}"
+    end
+
+    def process_base64_image(base64_data, max_width = nil, max_height = nil, resize = nil, image_type = nil)
+      require 'base64'
+
+      # Decode base64 data
+      image_data = Base64.decode64(base64_data)
+      content_type = detect_image_type(image_data)
+
+      # Apply processing if requested
+      if max_width || max_height || resize || image_type
+        image_data = process_image_data(image_data, content_type, max_width, max_height, resize, image_type)
+      end
+
+      # Return base64 encoded data URL
+      processed_base64 = Base64.strict_encode64(image_data)
+      mime_type = image_type ? "image/#{image_type}" : content_type
+      "data:#{mime_type};base64,#{processed_base64}"
+    rescue => e
+      raise "Failed to process base64 image: #{e.message}"
+    end
+
+    def detect_image_type_from_extension(file_path)
+      ext = File.extname(file_path).downcase
+      case ext
+      when '.jpg', '.jpeg' then 'image/jpeg'
+      when '.png' then 'image/png'
+      when '.gif' then 'image/gif'
+      when '.webp' then 'image/webp'
+      when '.svg' then 'image/svg+xml'
+      when '.bmp' then 'image/bmp'
+      when '.tiff', '.tif' then 'image/tiff'
+      else nil
+      end
+    end
+
+    def detect_image_type(image_data)
+      # Check magic bytes to detect image type
+      return 'image/jpeg' if image_data[0..1] == "\xFF\xD8".b
+      return 'image/png' if image_data[0..7] == "\x89PNG\r\n\x1A\n".b
+      return 'image/gif' if image_data[0..5] == "GIF87a".b || image_data[0..5] == "GIF89a".b
+      return 'image/webp' if image_data[0..3] == "RIFF".b && image_data[8..11] == "WEBP".b
+      return 'image/bmp' if image_data[0..1] == "BM".b
+      return 'image/svg+xml' if image_data.include?('<svg')
+      
+      # Default fallback
+      'image/octet-stream'
+    end
+
+    def process_image_data(image_data, content_type, max_width, max_height, resize, new_type)
+      # Note: This is a basic implementation that doesn't actually resize images
+      # For full image processing, consider using mini_magick or image_processing gems
+      
+      # If type conversion is requested and it's different from current type
+      if new_type && !content_type.include?(new_type)
+        # For now, we'll just change the MIME type
+        # Real implementation would use an image processing library
+        warn "Image format conversion not fully implemented. Install mini_magick gem for full image processing support."
+      end
+
+      # Return original data for now
+      # TODO: Implement actual resizing using image processing library
+      image_data
+    end
+
+    def handle_error(message)
+      if xml_mode?
+        render_as_xml('img', "[Error: #{message}]")
+      else
+        "[Image Error: #{message}]"
       end
     end
   end

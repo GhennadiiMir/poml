@@ -201,7 +201,7 @@ Customize component appearance:
 - ✅ Template variable substitution
 - ✅ Multiple output formats (raw, dict, OpenAI chat, etc.)
 - ✅ Document inclusion (.txt, .docx, .pdf)
-- ✅ Image handling
+- ✅ **Image handling with URL support** (HTTP/HTTPS fetching, base64 encoding, local files)
 - ✅ Table data processing
 - ✅ XML syntax mode
 - ✅ Stylesheet support

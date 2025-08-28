@@ -11,17 +11,18 @@ This document tracks the implementation status of all POML features in the Ruby 
 **Current Version**: 0.0.6  
 **Ruby Compatibility**: >= 2.7.0  
 **Test Framework**: Minitest  
-**Test Coverage**: 123 tests, 590 assertions (All passing in stable test suite)
+**Test Coverage**: 134 tests, 635 assertions (All passing in stable test suite)
 
 **Recent Achievements**:
 
+- ✅ **Image URL Support Added** - Enhanced ImageComponent to fetch images from HTTP(S) URLs with base64 encoding and processing
 - ✅ **Enhanced Tool Registration System** - Implemented multiple tool registration formats with comprehensive metadata integration
 - ✅ **Example Components Fixed** - Fixed critical parser bug affecting nested components (removed 'input' from void_elements)
 - ✅ **List Components Fixed** - Fixed `<list>` and `<item>` markdown formatting with proper nested content handling
 - ✅ **Utility Components Enhanced** - Fixed conversation component to support both `role` and `speaker` attributes
 - ✅ **Meta Component Fixed** - Removed meta from void elements list, now properly processes content and variables
 - ✅ **Template Engine Completed** - All template engine tests now passing with full meta variables support
-- ✅ **Test Suite Expanded** - Added utility components, meta component, and template engine tests to stable suite
+- ✅ **Test Suite Expanded** - Added image URL support, utility components, meta component, and template engine tests to stable suite
 
 **⚠️ Compatibility Updates Needed**:
 
@@ -127,6 +128,12 @@ This document tracks the implementation status of all POML features in the Ruby 
 |-----------|--------|-------|-------------|
 | `<file>` | ✅ Working | ✅ Tested | File content reading with path resolution and error handling |
 
+### Media Components
+
+| Component | Status | Tests | Description |
+|-----------|--------|-------|-------------|
+| `<img>` | ✅ Working | ✅ Tested | Image processing with URL fetching, base64 support, and format detection |
+
 ### List Components
 
 | Component | Status | Tests | Description |
@@ -192,7 +199,6 @@ This document tracks the implementation status of all POML features in the Ruby 
 |-----------|--------|-------|-------------|
 | `<object>` | ❌ Missing | ❌ No tests | Object serialization |
 | `<webpage>` | ❌ Missing | ❌ No tests | Web page content |
-| `<image>` | ❌ Missing | ❌ No tests | Image processing |
 
 ### File Operations
 

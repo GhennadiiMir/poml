@@ -9,6 +9,7 @@ This tutorial provides detailed examples and practical use cases for using the P
 - [Template Variables](#template-variables)
 - [Stylesheets](#stylesheets)
 - [Working with Files](#working-with-files)
+- [Image Components](#image-components)
 - [Advanced Components](#advanced-components)
 - [Error Handling](#error-handling)
 - [Integration Examples](#integration-examples)
@@ -440,6 +441,213 @@ POML
 context = JSON.parse(File.read('context.json'))
 result = Poml.process(markup: markup, context: context)
 puts result['content']
+```
+
+## Image Components
+
+The POML Ruby gem now supports comprehensive image handling including URL fetching, base64 encoding, and local file processing.
+
+### Basic Image Usage
+
+```ruby
+require 'poml'
+
+# Local image file
+markup = <<~POML
+  <poml>
+    <role>Image Analysis Expert</role>
+    <img src="charts/sales_data.png" alt="Sales Data Chart" />
+    <p>Please analyze the trends shown in this chart.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['content']
+```
+
+### Image from URL
+
+```ruby
+require 'poml'
+
+# Remote image URL
+markup = <<~POML
+  <poml>
+    <role>Visual Content Analyst</role>
+    <img src="https://example.com/images/product.jpg" alt="Product Image" />
+    <p>Analyze this product image for quality and features.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['content']
+```
+
+### Base64 Encoded Images
+
+```ruby
+require 'poml'
+
+# Embedded base64 image (small example - 1x1 transparent PNG)
+base64_data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=='
+
+markup = <<~POML
+  <poml>
+    <role>Image Processor</role>
+    <img base64="#{base64_data}" alt="Embedded Image" />
+    <p>Process this embedded image data.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['content']
+```
+
+### Advanced Image Processing
+
+```ruby
+require 'poml'
+
+# Image with processing parameters
+markup = <<~POML
+  <poml>
+    <role>Image Optimizer</role>
+    <img src="https://example.com/large-image.jpg" 
+         alt="Large Image" 
+         maxWidth="800" 
+         maxHeight="600" 
+         resize="0.5" 
+         type="png" 
+         syntax="multimedia" />
+    <p>Optimize and analyze this image.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['content']
+```
+
+### XML Mode Image Rendering
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml syntax="xml">
+    <role>Image Cataloger</role>
+    <img src="catalog/item001.jpg" 
+         alt="Catalog Item 001" 
+         position="top" 
+         type="jpeg" />
+    <p>Catalog this item with full metadata.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['content']
+```
+
+### Error Handling for Images
+
+```ruby
+require 'poml'
+
+def safe_image_processing(image_src, alt_text = '')
+  markup = <<~POML
+    <poml>
+      <role>Safe Image Processor</role>
+      <img src="#{image_src}" alt="#{alt_text}" />
+      <p>Process this image safely with error handling.</p>
+    </poml>
+  POML
+
+  begin
+    result = Poml.process(markup: markup)
+    { success: true, content: result['content'] }
+  rescue => e
+    { success: false, error: e.message, fallback: alt_text }
+  end
+end
+
+# Usage examples
+results = [
+  safe_image_processing('valid-image.jpg', 'Valid Image'),
+  safe_image_processing('https://example.com/image.png', 'Remote Image'),
+  safe_image_processing('nonexistent.jpg', 'Missing Image'),
+  safe_image_processing('invalid-url', 'Invalid Source')
+]
+
+results.each_with_index do |result, i|
+  puts "Result #{i + 1}:"
+  if result[:success]
+    puts "SUCCESS: #{result[:content][0..100]}..."
+  else
+    puts "ERROR: #{result[:error]}"
+    puts "FALLBACK: #{result[:fallback]}"
+  end
+  puts "-" * 50
+end
+```
+
+### Image Component Attributes
+
+The `<img>` component supports the following attributes:
+
+- **src**: Local file path or HTTP(S) URL to the image
+- **base64**: Base64-encoded image data (alternative to src)
+- **alt**: Alternative text for accessibility and fallback
+- **maxWidth**: Maximum width for resizing (pixels)
+- **maxHeight**: Maximum height for resizing (pixels)
+- **resize**: Resize factor (0.1 to 1.0)
+- **type**: Target image format (jpeg, png, gif, webp)
+- **syntax**: Display mode ('multimedia' or 'text')
+- **position**: Image position ('top', 'bottom', 'here')
+
+### Performance Considerations
+
+```ruby
+require 'poml'
+
+# For better performance with multiple images
+class ImageProcessor
+  def initialize
+    @cache = {}
+  end
+
+  def process_with_caching(markup, cache_key = nil)
+    if cache_key && @cache[cache_key]
+      return @cache[cache_key]
+    end
+
+    result = Poml.process(markup: markup)
+    
+    if cache_key
+      @cache[cache_key] = result
+    end
+
+    result
+  end
+
+  def clear_cache
+    @cache.clear
+  end
+end
+
+# Usage
+processor = ImageProcessor.new
+
+# Process images with caching
+result1 = processor.process_with_caching(
+  '<poml><img src="large-image.jpg" alt="Chart" /></poml>',
+  'chart_image'
+)
+
+result2 = processor.process_with_caching(
+  '<poml><img src="large-image.jpg" alt="Chart" /></poml>',
+  'chart_image'  # Will use cached result
+)
+
+puts "Results are identical: #{result1 == result2}"
 ```
 
 ## Advanced Components

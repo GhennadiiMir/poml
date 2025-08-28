@@ -19,7 +19,12 @@ Rake::TestTask.new(:test) do |t|
     'test/test_meta_component.rb',
     'test/test_template_engine.rb',
     'test/test_new_schema_components.rb',
-    'test/test_schema_compatibility.rb'
+    'test/test_schema_compatibility.rb',
+    'test/test_image_url_support.rb',
+    'test/test_inline_rendering.rb',
+    'test/test_openai_response_format.rb',
+    'test/test_file_reading_improvements.rb',
+    'test/test_pydantic_integration.rb'
   ]
   t.verbose = true
   t.ruby_opts = ['-w']
@@ -47,7 +52,8 @@ Rake::TestTask.new(:test_working) do |t|
     'test/test_meta_component.rb',
     'test/test_template_engine.rb',
     'test/test_new_schema_components.rb',
-    'test/test_schema_compatibility.rb'
+    'test/test_schema_compatibility.rb',
+    'test/test_image_url_support.rb'
   ]
   t.verbose = true
   t.ruby_opts = ['-w']

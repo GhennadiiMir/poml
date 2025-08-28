@@ -45,7 +45,13 @@ module Poml
         end
         
         return "\n\n" if items.empty?
-        items.join("\n") + "\n\n"
+        
+        list_content = items.join("\n")
+        if inline?
+          list_content
+        else
+          list_content + "\n\n"
+        end
       end
     end
   end

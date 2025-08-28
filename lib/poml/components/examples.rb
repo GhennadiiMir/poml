@@ -20,7 +20,7 @@ module Poml
           use_chat = chat
         end
         
-        if use_chat && caption_style == 'hidden'
+        result = if use_chat && caption_style == 'hidden'
           content
         else
           case caption_style
@@ -36,6 +36,8 @@ module Poml
             "#{content}\n\n"
           end
         end
+        
+        inline? ? result.strip : result
       end
     end
   end

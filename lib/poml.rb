@@ -21,14 +21,16 @@ module Poml
   # 
   # Parameters:
   # - markup: POML markup string or file path
-  # - format: 'raw', 'dict', 'openai_chat', 'langchain', 'pydantic' (default: 'dict')
+  # - format: 'raw', 'dict', 'openai_chat', 'openaiResponse', 'langchain', 'pydantic' (default: 'dict')
   # - context/variables: Hash of template variables
   # - stylesheet: CSS/styling rules
   # - chat: Enable chat mode (default: true)
   # - output_file: File path to write output to
   def self.process(markup:, format: 'dict', **options)
     # Handle file paths
+    source_file = nil
     content = if File.exist?(markup)
+      source_file = File.expand_path(markup)
       File.read(markup)
     else
       markup
@@ -51,6 +53,7 @@ module Poml
     context_options[:stylesheet] = options.delete(:stylesheet) if options.key?(:stylesheet)
     context_options[:chat] = options.delete(:chat) if options.key?(:chat)
     context_options[:syntax] = options.delete(:syntax) if options.key?(:syntax)
+    context_options[:source_path] = source_file if source_file
     
     result = render(content, format: format, **context_options)
     
@@ -86,8 +89,18 @@ module Poml
     render(content, format: 'openai_chat', **options)
   end
 
+  # Convenience method for OpenAI response format
+  def self.to_openai_response(content, **options)
+    render(content, format: 'openaiResponse', **options)
+  end
+
   # Convenience method for dict format
   def self.to_dict(content, **options)
     render(content, format: 'dict', **options)
+  end
+
+  # Convenience method for Pydantic format with Python interoperability
+  def self.to_pydantic(content, **options)
+    render(content, format: 'pydantic', **options)
   end
 end

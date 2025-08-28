@@ -38,7 +38,7 @@ module Poml
         elsif file_path.downcase.end_with?('.docx')
           read_docx_content(file_path)
         else
-          File.read(file_path)
+          read_file_with_encoding(file_path)
         end
       rescue => e
         "[Document: #{@src} (error reading: #{e.message})]"
@@ -150,7 +150,12 @@ module Poml
       apply_stylesheet
       
       content = @element.content.empty? ? render_children : @element.content
-      "#{content}\n\n"
+      
+      if xml_mode?
+        render_as_xml('p', content)
+      else
+        render_with_inline_support(content)
+      end
     end
   end
 end

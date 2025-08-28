@@ -76,7 +76,14 @@ module Poml
       apply_stylesheet
       
       content = @element.content.empty? ? render_children : @element.content
-      level = get_attribute('level', @context.header_level).to_i
+      
+      # Determine header level from tag name or attribute
+      if @element.tag_name =~ /^h(\d)$/
+        level = $1.to_i
+      else
+        level = get_attribute('level', @context.header_level).to_i
+      end
+      
       level = [level, 6].min # Cap at h6
       level = [level, 1].max # Minimum h1
       
@@ -84,7 +91,11 @@ module Poml
         render_as_xml('h', content, { level: level })
       else
         header_prefix = '#' * level
-        "#{header_prefix} #{content}\n\n"
+        if inline?
+          content
+        else
+          "#{header_prefix} #{content}"
+        end
       end
     end
   end
@@ -110,24 +121,41 @@ module Poml
       apply_stylesheet
       
       content = @element.content.empty? ? render_children : @element.content
-      inline = get_attribute('inline', true)
+      inline_attr = get_attribute('inline', true)
       lang = get_attribute('lang', '')
       
+      # Determine if this should be inline:
+      # - If the base 'inline' attribute is set and true, it's inline
+      # - If the component-specific 'inline' attribute is set, use that
+      # - Default to true for backwards compatibility
+      is_inline = if has_attribute?('inline')
+        get_attribute('inline') == 'true' || get_attribute('inline') == true
+      else
+        inline_attr == true || inline_attr == 'true'
+      end
+      
       if xml_mode?
-        attributes = { inline: inline }
+        attributes = { inline: is_inline }
         attributes[:lang] = lang unless lang.empty?
         render_as_xml('code', content, attributes)
       else
-        if inline
+        if is_inline
           "`#{content}`"
         else
-          if lang.empty?
+          result = if lang.empty?
             "```\n#{content}\n```\n\n"
           else
             "```#{lang}\n#{content}\n```\n\n"
           end
+          inline? ? result.strip : result
         end
       end
+    end
+
+    private
+    
+    def has_attribute?(name)
+      @element.attributes.key?(name.to_s) || @element.attributes.key?(name.to_s.downcase)
     end
   end
 

@@ -8,12 +8,12 @@ module Poml
     attr_accessor :response_schema, :tools, :runtime_parameters, :disabled_components
     attr_accessor :template_engine, :chat_messages, :custom_metadata
 
-    def initialize(variables: {}, stylesheet: nil, chat: true, syntax: nil)
+    def initialize(variables: {}, stylesheet: nil, chat: true, syntax: nil, source_path: nil)
       @variables = variables || {}
       @stylesheet = parse_stylesheet(stylesheet)
       @chat = chat
       @texts = {}
-      @source_path = nil
+      @source_path = source_path
       @syntax = syntax
       @header_level = 1 # Track current header nesting level
       @response_schema = nil

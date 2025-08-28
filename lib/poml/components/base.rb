@@ -40,6 +40,30 @@ module Poml
       end
     end
 
+    def inline?
+      # Check if component should render inline
+      get_attribute('inline', false) == true || get_attribute('inline') == 'true'
+    end
+
+    def render_with_inline_support(content)
+      # Render content with inline vs block consideration
+      if inline?
+        render_inline(content)
+      else
+        render_block(content)
+      end
+    end
+
+    def render_inline(content)
+      # Inline rendering - no extra whitespace or newlines
+      content.to_s.strip
+    end
+
+    def render_block(content)
+      # Block rendering - traditional with proper spacing
+      content.to_s.rstrip + "\n\n"
+    end
+
     def render_as_xml(tag_name, content = nil, attributes = {})
       # Render as XML element with proper formatting
       content ||= render_children
@@ -59,6 +83,51 @@ module Poml
           # Simple content
           "<#{tag_name}#{attrs_str}>#{content}</#{tag_name}>\n"
         end
+      end
+    end
+
+    # Helper method for robust file reading with encoding support
+    def read_file_with_encoding(file_path, encoding: 'utf-8')
+      # Normalize file path for cross-platform compatibility
+      normalized_path = File.expand_path(file_path)
+      
+      # Try primary encoding first (UTF-8)
+      begin
+        return File.read(normalized_path, encoding: encoding)
+      rescue Encoding::InvalidByteSequenceError, Encoding::UndefinedConversionError => e
+        # If UTF-8 fails, try with binary mode and force encoding
+        begin
+          content = File.read(normalized_path, mode: 'rb')
+          # Try to detect and convert encoding
+          return content.force_encoding('utf-8').encode('utf-8', invalid: :replace, undef: :replace)
+        rescue => encoding_error
+          # If all else fails, read as binary and provide meaningful error
+          raise "File encoding error for #{file_path}: #{e.message}. Original encoding detection failed: #{encoding_error.message}"
+        end
+      rescue => e
+        # Re-raise other file reading errors with context
+        raise "Error reading file #{file_path}: #{e.message}"
+      end
+    end
+
+    # Helper method for reading file lines with encoding support
+    def read_file_lines_with_encoding(file_path, encoding: 'utf-8')
+      # Normalize file path for cross-platform compatibility
+      normalized_path = File.expand_path(file_path)
+      
+      begin
+        return File.readlines(normalized_path, encoding: encoding)
+      rescue Encoding::InvalidByteSequenceError, Encoding::UndefinedConversionError => e
+        # If UTF-8 fails, try with binary mode and force encoding line by line
+        begin
+          content = File.read(normalized_path, mode: 'rb')
+          lines = content.force_encoding('utf-8').encode('utf-8', invalid: :replace, undef: :replace).lines
+          return lines
+        rescue => encoding_error
+          raise "File encoding error for #{file_path}: #{e.message}. Original encoding detection failed: #{encoding_error.message}"
+        end
+      rescue => e
+        raise "Error reading file #{file_path}: #{e.message}"
       end
     end
 

@@ -271,10 +271,10 @@ module Poml
               
               if show_content
                 begin
-                  content = File.read(full_path, encoding: 'utf-8')
+                  content = read_file_with_encoding(full_path)
                   item[:content] = content
-                rescue
-                  item[:content] = '[Binary file or read error]'
+                rescue => e
+                  item[:content] = "[Error reading file: #{e.message}]"
                 end
               end
               
