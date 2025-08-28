@@ -178,11 +178,10 @@ module Poml
       messages.each do |msg|
         speaker = msg['speaker'] || msg['role'] || 'human'
         content = msg['content'] || ''
-        result << "  <msg speaker="#{speaker}">#{escape_xml(content)}</msg>"
+        result << "  <msg speaker=\"#{speaker}\">#{escape_xml(content)}</msg>"
       end
       result << '</conversation>'
-      result.join("
-")
+      result.join("\n")
     end
     
     def render_conversation_markdown(messages)

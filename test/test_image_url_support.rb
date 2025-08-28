@@ -20,8 +20,8 @@ class TestImageUrlSupport < Minitest::Test
   def test_image_with_url_src_mocked
     markup = '<poml><img src="https://example.com/image.jpg" alt="Remote image" /></poml>'
     
-    # Mock the HTTP request
-    mock_http_response = create_mock_http_response
+    # Mock the HTTP request (unused in current implementation)
+    # mock_http_response = create_mock_http_response
     
     # We'll need to test this differently since we can't easily mock in minitest
     # For now, test that it recognizes URLs

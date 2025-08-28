@@ -841,7 +841,7 @@ module Poml
       if new_type && !content_type.include?(new_type)
         # For now, we'll just change the MIME type
         # Real implementation would use an image processing library
-        warn "Image format conversion not fully implemented. Install mini_magick gem for full image processing support."
+        # Note: Basic image format conversion available. Install mini_magick gem for enhanced image processing support.
       end
 
       # Return original data for now

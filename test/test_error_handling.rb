@@ -148,6 +148,7 @@ class TestErrorHandling < Minitest::Test
       end
     end
     
+    
     threads.each(&:join)
     
     # All results should be consistent
@@ -155,5 +156,56 @@ class TestErrorHandling < Minitest::Test
     results.each do |result|
       assert_includes result, 'Concurrent test'
     end
+  end
+  
+  # Enhanced unknown component tests (based on debug_unknown_component.rb)
+  def test_unknown_component_detailed
+    markup = '<unknowncomponent>Content</unknowncomponent>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should include both component name and content for debugging
+    assert_includes result, 'unknowncomponent', "Result should include component name for debugging"
+    assert_includes result, 'Content', "Result should include component content"
+  end
+  
+  def test_multiple_unknown_components
+    markup = '<unknown1>Content1</unknown1><unknown2>Content2</unknown2>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should handle multiple unknown components
+    assert_includes result, 'unknown1'
+    assert_includes result, 'Content1'
+    assert_includes result, 'unknown2'
+    assert_includes result, 'Content2'
+  end
+  
+  def test_unknown_component_with_attributes
+    markup = '<unknowncomp attr1="value1" attr2="value2">Content</unknowncomp>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should handle unknown components with attributes gracefully
+    assert_includes result, 'unknowncomp'
+    assert_includes result, 'Content'
+  end
+  
+  def test_nested_unknown_components
+    markup = '<unknown><nested>Content</nested></unknown>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should handle nested unknown components
+    assert_includes result, 'unknown'
+    assert_includes result, 'nested'
+    assert_includes result, 'Content'
+  end
+  
+  def test_mixed_known_unknown_components
+    markup = '<b>Bold</b><unknown>Unknown</unknown><i>Italic</i>'
+    result = Poml.process(markup: markup, format: 'raw')
+    
+    # Should process known components normally and handle unknown gracefully
+    assert_includes result, '**Bold**', "Should process bold component"
+    assert_includes result, '*Italic*', "Should process italic component"
+    assert_includes result, 'unknown', "Should include unknown component name"
+    assert_includes result, 'Unknown', "Should include unknown component content"
   end
 end

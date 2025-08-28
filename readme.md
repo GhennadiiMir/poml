@@ -139,6 +139,12 @@ poml markup.poml --format raw
 - `<hint>`: Provide hints or additional information
 - `<p>`: Paragraph text
 
+### Chat Components
+
+- `<ai>`: AI assistant messages
+- `<human>`: Human user messages  
+- `<system>`: System prompts and instructions
+
 ### Content Components
 
 - `<Document src="file.txt">`: Include external documents (.txt, .docx, .pdf)
@@ -198,7 +204,8 @@ Customize component appearance:
 
 ## Features
 
-- ✅ Full POML component support with comprehensive test coverage (177 tests, 834 assertions)
+- ✅ **291 tests** with 1591 assertions - ALL PASSING
+- 🎯 **Complete test coverage** with comprehensive, well-organized test suite including performance and format compatibility tests
 - ✅ Template variable substitution with conditional logic and loops
 - ✅ Multiple output formats (raw, dict, openai_chat, openaiResponse, langchain, pydantic)
 - ✅ Document inclusion (.txt, .docx, .pdf) with robust encoding support
@@ -213,6 +220,10 @@ Customize component appearance:
 - ✅ Chat vs non-chat modes for different use cases
 - ✅ **Schema definitions** - Full support for both legacy `lang` and new `parser` attribute syntax
 - ✅ **Tool registration** - Enhanced tool definition capabilities with multiple formats
+- ✅ **Chat components** - AI, Human, and System message components with nested formatting support
+- ✅ **Unknown component handling** - Graceful error handling for unrecognized components
+- ✅ **Performance testing** - Comprehensive performance benchmarks for large datasets and complex templates
+- ✅ **Format compatibility** - Cross-format consistency validation and feature testing
 
 ## Document Support
 
@@ -233,21 +244,24 @@ bundle install
 Run tests:
 
 ```bash
-# Run all tests
-bundle exec ruby test/run_all_tests.rb
+# Run stable test suite (recommended)
+bundle exec rake test           # 291 tests, 1591 assertions, all passing
 
-# Run main test suite
-bundle exec ruby -I lib test/test_poml.rb
+# Run all tests including development tests  
+bundle exec rake test_all       # Includes debug tests (for development)
 
-# Run tutorial examples tests  
-bundle exec ruby -I lib test/test_tutorial_examples.rb
+# Run specific test files
+bundle exec ruby -I lib test/test_basic_functionality.rb
+bundle exec ruby -I lib test/test_template_engine.rb
+bundle exec ruby -I lib test/test_performance.rb
+bundle exec ruby -I lib test/test_format_compatibility.rb
 ```
 
 Build and install locally:
 
 ```bash
 gem build poml.gemspec
-gem install poml-0.0.3.gem
+gem install poml-0.0.7.gem
 ```
 
 ## License

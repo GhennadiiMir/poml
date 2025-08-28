@@ -1,7 +1,7 @@
 require "minitest/autorun"
 require "poml"
 
-class PomlAdditionalComponentsTest < Minitest::Test
+class PomlDataComponentsTest < Minitest::Test
   
   def test_object_component_json_format
     # Test object component with JSON data

@@ -1,7 +1,7 @@
 require "minitest/autorun"
 require "poml"
 
-class PomlNewComponentsTest < Minitest::Test
+class PomlMarkupComponentsTest < Minitest::Test
   def test_formatting_components
     # Test basic formatting components
     content = '<poml syntax="xml">

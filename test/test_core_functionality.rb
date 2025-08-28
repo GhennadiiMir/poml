@@ -1,6 +1,6 @@
 require_relative "test_helper"
 
-class TestImplementedFeatures < Minitest::Test
+class PomlCoreFunctionalityTest < Minitest::Test
   include TestHelper
 
   def test_basic_formatting_components

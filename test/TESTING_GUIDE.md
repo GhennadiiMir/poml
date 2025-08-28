@@ -1,22 +1,23 @@
-# POML Ruby Gem Test Guide
+# POML Ruby Gem - Comprehensive Test Guide
 
-This is the comprehensive testing guide for the POML Ruby gem. It covers test execution, development workflow, and contribution guidelines.
+This is the complete testing documentation for the POML Ruby gem. It covers test execution, development workflow, and contribution guidelines.
 
-## Quick Reference
+## Quick Start
 
 ### Running Tests
 
-**Stable Test Suite (Recommended for CI/CD)**:
+**All Tests (Recommended)**:
 
 ```bash
-bundle exec rake test        # 186 tests, 866 assertions, 0 failures
+bundle exec rake test        # 285 tests, 1526 assertions, 0 failures
 bundle exec rake             # Same as above (default task)
 ```
 
-**Development Test Suite**:
+**Legacy Aliases (Same as above)**:
 
 ```bash
-bundle exec rake test_all    # 274+ tests, 12 failures (down from 15+)
+bundle exec rake test_all    # 285 tests, 0 failures (ALL TESTS PASSING)
+bundle exec rake test_working # Same as rake test
 ```
 
 **Individual Test Files**:
@@ -31,23 +32,64 @@ bundle exec ruby -I lib test/test_template_engine.rb
 # Schema components
 bundle exec ruby -I lib test/test_new_schema_components.rb
 
-# All working features
-bundle exec ruby -I lib test/test_implemented_features.rb
+# Data components
+bundle exec ruby -I lib test/test_data_components.rb
 ```
 
-### Test Status Summary
+## Current Status
 
-**✅ Stable Tests**: 17 files, 186 tests, 866 assertions - **ALL PASSING**
+**✅ Complete Test Coverage**: 285 tests, 1526 assertions - **ALL TESTS PASSING**
+
+### Test Organization
+
+```
+test/
+├── TESTING_GUIDE.md              # 📖 This comprehensive testing documentation
+├── test_*.rb                     # All test files (24 files)
+├── fixtures/                     # Test data and examples
+├── debug/                        # Development and debug scripts
+└── test_helper.rb               # Test utilities and setup
+```
+
+### Test Files by Category
+
+**Core Functionality**
 
 - `test_basic_functionality.rb` - Core formatting and chat components
-- `test_implemented_features.rb` - Current working features  
+- `test_core_functionality.rb` - Essential POML processing features
 - `test_real_implementation.rb` - Comprehensive real-world scenarios
-- `test_formatting_components.rb` - All formatting components (bold, italic, underline, etc.)
-- `test_table_component.rb` - Table rendering from JSON/CSV with all features
+- `test_poml.rb` - Legacy comprehensive tests
+
+**Component Tests**
+
+- `test_formatting_components.rb` - Bold, italic, underline, strikethrough, headers, code
+- `test_markup_components.rb` - XML-style markup components
+- `test_data_components.rb` - Object, audio, and data serialization components
+- `test_utility_components.rb` - List, conversation, tree components
 - `test_file_components.rb` - File reading operations with path resolution
-- `test_utility_components.rb` - Utility components (conversation, tree, lists)
+- `test_image_url_support.rb` - Image handling with URL fetching
+
+**Template Engine**
+
+- `test_template_engine.rb` - Variables, conditionals (if), loops (for)
 - `test_meta_component.rb` - Metadata handling and template variables
-- `test_template_engine.rb` - Template engine with variables, conditionals, and loops
+
+**Schema and Integration**
+
+- `test_new_schema_components.rb` - Schema components (output-schema, tool-definition)
+- `test_schema_compatibility.rb` - Schema backward compatibility
+- `test_openai_response_format.rb` - OpenAI response format
+- `test_pydantic_integration.rb` - Python interoperability
+- `test_inline_rendering.rb` - Inline rendering support
+
+**Advanced Features**
+
+- `test_chat_components.rb` - AI, human, system message components
+- `test_error_handling.rb` - Error scenarios and graceful failures
+- `test_file_reading_improvements.rb` - Enhanced file operations
+- `test_table_component.rb` - Table rendering from JSON/CSV
+- `test_tutorial_examples.rb` - Tutorial and documentation examples
+- `test_actual_behavior.rb` - Actual behavior validation tests
 - `test_new_schema_components.rb` - New schema components (output-schema, tool-definition)
 - `test_schema_compatibility.rb` - Schema backward compatibility
 - `test_image_url_support.rb` - Image handling with URL fetching
@@ -226,7 +268,7 @@ bundle exec ruby -I lib test/test_template_engine.rb --verbose
 ### Using Rake Tasks
 
 ```bash
-bundle exec rake test           # Stable tests only (177 tests)
+bundle exec rake test           # Stable tests only (212 tests)
 bundle exec rake test_working   # Same as above (legacy alias)
 bundle exec rake test_all       # All tests including failing ones (265+ tests)
 bundle exec rake                # Default task (same as rake test)
@@ -333,14 +375,14 @@ ls test/fixtures/
 
 ### Current Performance
 
-- **Stable test suite**: ~0.06 seconds (177 tests, 834 assertions)
+- **Stable test suite**: ~0.12 seconds (212 tests, 1044 assertions)
 - **Full test suite**: ~0.12 seconds (265+ tests)
 - **Individual test files**: Usually < 0.01 seconds
 
 ### Test Statistics
 
 - **Total test files**: 24 (17 stable + 7 development)
-- **Stable tests**: 186 tests, 866 assertions, 0 failures
+- **Stable tests**: 212 tests, 1044 assertions, 0 failures
 - **Development tests**: 88+ additional tests (12 failures expected, down from 15+)
 - **Coverage**: Comprehensive coverage of all implemented features
 

@@ -195,7 +195,7 @@ class PomlTest < Minitest::Test
     
     # This should either work or raise a Poml::Error, but not crash
     begin
-      result = Poml.process(markup: malformed_markup)
+      Poml.process(markup: malformed_markup)
       # If it doesn't raise an error, that's fine too
     rescue Poml::Error
       # Expected behavior for malformed markup
