@@ -81,6 +81,8 @@ module Poml
 
   # Convenience method for quick text rendering
   def self.to_text(content, **options)
+    # For text rendering, disable chat mode to allow chat components to render content
+    options[:chat] = false unless options.key?(:chat)
     render(content, format: 'raw', **options)
   end
 

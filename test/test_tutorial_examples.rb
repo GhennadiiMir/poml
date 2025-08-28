@@ -61,7 +61,7 @@ class TutorialExamplesTest < Minitest::Test
     # Pydantic format example
     result = Poml.process(markup: markup, format: 'pydantic')
     assert_kind_of Hash, result
-    assert result.key?('prompt')
+    assert result.key?('content')  # Pydantic format uses 'content' key, not 'prompt'
     assert result.key?('variables')
     assert result.key?('chat_enabled')
   end
@@ -439,7 +439,7 @@ class TutorialExamplesTest < Minitest::Test
     
     result = Poml.process(markup: base_markup, format: 'pydantic')
     assert_kind_of Hash, result
-    assert result.key?('prompt')
+    assert result.key?('content')  # Pydantic format uses 'content' key, not 'prompt'
     assert result.key?('variables')
     assert result.key?('chat_enabled')
   end

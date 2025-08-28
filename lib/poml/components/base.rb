@@ -235,8 +235,13 @@ module Poml
       tag_name = element.tag_name
       component_class = COMPONENT_MAPPING[tag_name] || 
                        COMPONENT_MAPPING[tag_name.to_s] || 
-                       COMPONENT_MAPPING[tag_name.to_sym] ||
-                       TextComponent
+                       COMPONENT_MAPPING[tag_name.to_sym]
+      
+      # Use UnknownComponent for unrecognized tags (except :text which should use TextComponent)
+      if component_class.nil?
+        component_class = tag_name == :text ? TextComponent : UnknownComponent
+      end
+      
       component = component_class.new(element, context)
       component.render
     end

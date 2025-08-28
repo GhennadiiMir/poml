@@ -8,6 +8,9 @@ module Poml
     end
 
     def render(elements, format = 'dict')
+      # Set the output format in context so components can adjust behavior
+      @context.output_format = format
+      
       case format
       when 'raw'
         render_raw(elements)

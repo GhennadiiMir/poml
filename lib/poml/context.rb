@@ -6,9 +6,9 @@ module Poml
   class Context
     attr_accessor :variables, :stylesheet, :chat, :texts, :source_path, :syntax, :header_level
     attr_accessor :response_schema, :tools, :runtime_parameters, :disabled_components
-    attr_accessor :template_engine, :chat_messages, :custom_metadata
+    attr_accessor :template_engine, :chat_messages, :custom_metadata, :output_format
 
-    def initialize(variables: {}, stylesheet: nil, chat: true, syntax: nil, source_path: nil)
+    def initialize(variables: {}, stylesheet: nil, chat: true, syntax: nil, source_path: nil, output_format: nil)
       @variables = variables || {}
       @stylesheet = parse_stylesheet(stylesheet)
       @chat = chat
@@ -23,6 +23,7 @@ module Poml
       @template_engine = TemplateEngine.new(self)
       @chat_messages = [] # Track structured chat messages
       @custom_metadata = {} # Track general metadata like title, description etc.
+      @output_format = output_format # Track target output format for component behavior
     end
 
     def xml_mode?

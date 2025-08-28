@@ -4,7 +4,8 @@ module Poml
     def render
       apply_stylesheet
       
-      content = @element.content.empty? ? render_children : @element.content
+      # Always use render_children if there are child elements, otherwise use content
+      content = @element.children.empty? ? @element.content : render_children
       
       # Add to structured chat messages if context supports it
       if @context.respond_to?(:chat_messages)
@@ -17,8 +18,13 @@ module Poml
       if xml_mode?
         render_as_xml('ai-msg', content, { speaker: 'ai' })
       else
-        # Always render content - let the renderer decide whether to use structured messages
-        content
+        # In raw format with chat mode, return empty to avoid duplicate content
+        # But allow content rendering when chat is false (templates, etc.)
+        if @context.output_format == 'raw' && @context.chat
+          ''
+        else
+          content
+        end
       end
     end
   end
@@ -28,7 +34,8 @@ module Poml
     def render
       apply_stylesheet
       
-      content = @element.content.empty? ? render_children : @element.content
+      # Always use render_children if there are child elements, otherwise use content
+      content = @element.children.empty? ? @element.content : render_children
       
       # Add to structured chat messages if context supports it
       if @context.respond_to?(:chat_messages)
@@ -41,8 +48,13 @@ module Poml
       if xml_mode?
         render_as_xml('user-msg', content, { speaker: 'human' })
       else
-        # Always render content - let the renderer decide whether to use structured messages
-        content
+        # In raw format with chat mode, return empty to avoid duplicate content
+        # But allow content rendering when chat is false (templates, etc.)
+        if @context.output_format == 'raw' && @context.chat
+          ''
+        else
+          content
+        end
       end
     end
   end
@@ -52,7 +64,8 @@ module Poml
     def render
       apply_stylesheet
       
-      content = @element.content.empty? ? render_children : @element.content
+      # Always use render_children if there are child elements, otherwise use content
+      content = @element.children.empty? ? @element.content : render_children
       
       # Add to structured chat messages if context supports it
       if @context.respond_to?(:chat_messages)
@@ -65,8 +78,13 @@ module Poml
       if xml_mode?
         render_as_xml('system-msg', content, { speaker: 'system' })
       else
-        # Always render content - let the renderer decide whether to use structured messages
-        content
+        # In raw format with chat mode, return empty to avoid duplicate content
+        # But allow content rendering when chat is false (templates, etc.)
+        if @context.output_format == 'raw' && @context.chat
+          ''
+        else
+          content
+        end
       end
     end
   end
