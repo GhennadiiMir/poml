@@ -304,6 +304,7 @@ By default, it uses `markdown` syntax and writes the contents within it directly
 When used with "markup" syntaxes, it renders a standalone section preceded and followed by one blank line.
 It's mostly used in the root element of a prompt, but it should also work in any other places.
 This component will be automatically added as a wrapping root element if it's not provided:
+
 1. If the first element is pure text contents, `<poml syntax="text">` will be added.
 2. If the first element is a POML component, `<poml syntax="markdown">` will be added.
 
@@ -703,6 +704,7 @@ Users can also include a list of steps or instructions to complete the task.
 ```
 
 When including a list of steps:
+
 ```xml
 <task>
   Planning a schedule for a travel.
@@ -740,6 +742,7 @@ Displaying an external document like PDF, TXT or DOCX.
 #### Usages
 
 To display a Word document without including the real multimedia:
+
 ```xml
 <Document src="sample.docx" multimedia="false"/>
 ```
@@ -764,6 +767,14 @@ To display a Word document without including the real multimedia:
 Image (`<img>`) displays an image in the content.
 Alternatively, it can also be shown as an alt text by specifying the `syntax` prop.
 Note that syntax must be specified as `multimedia` to show the image.
+
+**Ruby Implementation Features**:
+
+- **Advanced Image Processing**: Uses libvips for high-performance image operations
+- **Multiple Resize Modes**: Supports `fit`, `fill`, and `stretch` resize modes
+- **Format Conversion**: Automatic conversion between JPEG, PNG, WebP, TIFF, and GIF
+- **URL Support**: Fetches images from HTTP(S) URLs with automatic base64 encoding
+- **Graceful Fallback**: Falls back to basic functionality when libvips is not available
 
 #### Usages
 
@@ -889,6 +900,7 @@ Displays a directory structure as a tree.
 #### Usages
 
 To display a directory structure with a filter for Python files:
+
 ```xml
 <folder src="project_dir" filter=".*\.py$" maxDepth="3" />
 ```
@@ -980,16 +992,19 @@ Displays content from a webpage.
 #### Usages
 
 Display content from a URL:
+
 ```xml
 <webpage url="https://example.com" />
 ```
 
 Extract only specific content using a selector:
+
 ```xml
 <webpage url="https://example.com" selector="main article" />
 ```
 
 Convert HTML to structured POML components:
+
 ```xml
 <webpage url="https://example.com" extractText="false" />
 ```

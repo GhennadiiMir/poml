@@ -42,4 +42,5 @@ Gem::Specification.new do |spec|
   # Runtime dependencies
   spec.add_dependency "rexml", "~> 3.2"
   spec.add_dependency "rubyzip", "~> 2.3"
+  spec.add_dependency "ruby-vips", "~> 2.1"
 end

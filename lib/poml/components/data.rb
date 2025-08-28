@@ -903,6 +903,172 @@ module Poml
     end
 
     def process_image_data(image_data, content_type, max_width, max_height, resize, new_type)
+      begin
+        require 'vips'
+      rescue LoadError
+        # Fallback to basic implementation if vips is not available
+        warn "Warning: ruby-vips gem not found. Image processing features are limited. Install ruby-vips gem for full image processing support."
+        return image_data
+      end
+
+      begin
+        # Load image from memory
+        image = Vips::Image.new_from_buffer(image_data, "")
+        
+        # Apply resizing if requested
+        if max_width || max_height || resize
+          image = resize_image(image, max_width, max_height, resize)
+        end
+
+        # Convert format if requested
+        if new_type && !content_type.include?(new_type)
+          # Map new_type to vips format
+          format_suffix = case new_type.downcase
+                         when 'jpeg', 'jpg' then '.jpg'
+                         when 'png' then '.png'
+                         when 'webp' then '.webp'
+                         when 'tiff', 'tif' then '.tiff'
+                         when 'gif' then '.gif'
+                         else '.jpg' # default fallback
+                         end
+          
+          # Convert image to new format
+          image = convert_image_format(image, format_suffix)
+        end
+
+        # Write image back to buffer
+        image.write_to_buffer(get_vips_format_string(new_type || extract_format_from_content_type(content_type)))
+      rescue => e
+        warn "Warning: Image processing failed (#{e.message}). Returning original image data."
+        image_data
+      end
+    end
+
+    private
+
+    def resize_image(image, max_width, max_height, resize_mode)
+      current_width = image.width
+      current_height = image.height
+
+      # Convert parameters to integers if they are strings
+      max_width = max_width.to_i if max_width && max_width != 0
+      max_height = max_height.to_i if max_height && max_height != 0
+
+      # Determine target dimensions
+      if resize_mode == 'fit'
+        # Fit within bounds while preserving aspect ratio
+        if max_width && max_height
+          scale_x = max_width.to_f / current_width
+          scale_y = max_height.to_f / current_height
+          scale = [scale_x, scale_y].min
+          
+          if scale < 1.0 # Only resize if image is larger than target
+            image = image.resize(scale)
+          end
+        elsif max_width
+          scale = max_width.to_f / current_width
+          if scale < 1.0
+            image = image.resize(scale)
+          end
+        elsif max_height
+          scale = max_height.to_f / current_height
+          if scale < 1.0
+            image = image.resize(scale)
+          end
+        end
+      elsif resize_mode == 'fill'
+        # Fill the entire area, potentially cropping
+        if max_width && max_height
+          scale_x = max_width.to_f / current_width
+          scale_y = max_height.to_f / current_height
+          scale = [scale_x, scale_y].max
+          
+          # Resize to fill
+          image = image.resize(scale)
+          
+          # Crop to exact dimensions if needed
+          if image.width > max_width || image.height > max_height
+            left = [(image.width - max_width) / 2, 0].max
+            top = [(image.height - max_height) / 2, 0].max
+            image = image.crop(left, top, max_width, max_height)
+          end
+        end
+      elsif resize_mode == 'stretch'
+        # Stretch to exact dimensions (may distort aspect ratio)
+        if max_width && max_height
+          scale_x = max_width.to_f / current_width
+          scale_y = max_height.to_f / current_height
+          image = image.resize(scale_x, vscale: scale_y)
+        end
+      else
+        # Default behavior: fit within bounds
+        if max_width && current_width > max_width
+          scale = max_width.to_f / current_width
+          image = image.resize(scale)
+        end
+        if max_height && image.height > max_height
+          scale = max_height.to_f / image.height
+          image = image.resize(scale)
+        end
+      end
+
+      image
+    end
+
+    def convert_image_format(image, format_suffix)
+      case format_suffix.downcase
+      when '.jpg', '.jpeg'
+        # For JPEG, ensure RGB colorspace and add quality setting
+        image = image.colourspace(:srgb) if image.bands >= 3
+        image
+      when '.png'
+        # PNG supports transparency, no special handling needed
+        image
+      when '.webp'
+        # WebP format, good compression
+        image
+      when '.tiff'
+        # TIFF format
+        image
+      when '.gif'
+        # For GIF, we may need to handle transparency and color reduction
+        # Note: libvips has limited GIF write support, might need special handling
+        image
+      else
+        image
+      end
+    end
+
+    def get_vips_format_string(image_type)
+      case image_type&.downcase
+      when 'jpeg', 'jpg'
+        '.jpg[Q=85]' # JPEG with 85% quality
+      when 'png'
+        '.png'
+      when 'webp'
+        '.webp'
+      when 'tiff', 'tif'
+        '.tiff'
+      when 'gif'
+        '.gif'
+      else
+        '.jpg[Q=85]' # Default to JPEG
+      end
+    end
+
+    def extract_format_from_content_type(content_type)
+      return nil unless content_type&.start_with?('image/')
+      
+      format = content_type.split('/').last
+      case format
+      when 'jpeg' then 'jpg'
+      else format
+      end
+    end
+
+    public
+
+    def process_image_data_old(image_data, content_type, max_width, max_height, resize, new_type)
       # Note: This is a basic implementation that doesn't actually resize images
       # For full image processing, consider using mini_magick or image_processing gems
       
@@ -913,8 +1079,8 @@ module Poml
         # Note: Basic image format conversion available. Install mini_magick gem for enhanced image processing support.
       end
 
-      # Return original data for now
-      # TODO: Implement actual resizing using image processing library
+      # Legacy implementation - kept for compatibility
+      # Use process_image_data method above for full image processing with libvips
       image_data
     end
 

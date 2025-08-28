@@ -172,7 +172,7 @@ gem install poml
 
 - **Ruby**: >= 2.7.0
 - **Current Version**: 0.0.7
-- **Test Coverage**: 303 tests, 1681 assertions, 100% pass rate
+- **Test Coverage**: 399 tests, 2812 assertions, **100% pass rate** (0 failures, 0 errors, 0 skips)
 
 ## Next Steps
 

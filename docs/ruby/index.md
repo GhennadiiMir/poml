@@ -127,6 +127,42 @@ result = Poml.process(markup: markup)
 puts "Tools: #{result['tools']}"  # Tools are now at top level
 ```
 
+### Image Processing
+
+The Ruby implementation includes advanced image processing with libvips:
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml>
+    <role>Image Analyst</role>
+    <task>Analyze this image</task>
+    
+    <!-- Local image with resizing -->
+    <img src="large-photo.jpg" 
+         max-width="800" 
+         max-height="600" 
+         resize="fit" 
+         type="webp" />
+    
+    <!-- Remote image -->
+    <img src="https://example.com/chart.png" alt="Data visualization" />
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+# Images are automatically processed and converted to base64 data URLs
+```
+
+**Image Processing Features:**
+
+* **libvips integration** for high-performance processing
+* **Multiple resize modes**: `fit`, `fill`, `stretch`
+* **Format conversion**: JPEG, PNG, WebP, TIFF, GIF
+* **URL support**: Fetch images from HTTP(S) URLs
+* **Graceful fallback** when libvips is not available
+
 ## API Reference
 
 ### `Poml.process(options)`
