@@ -198,7 +198,7 @@ metadata = result['metadata']
 puts metadata['chat']        # true/false - whether chat mode is enabled
 puts metadata['variables']   # Hash of template variables
 puts metadata['schemas']     # Array of output schemas
-puts metadata['tools']       # Array of tool definitions
+puts result['tools']          # Array of tool definitions (top-level)
 ```
 
 ### Error Handling

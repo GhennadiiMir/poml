@@ -42,9 +42,9 @@ class TestOpenAIResponseFormat < Minitest::Test
     
     assert_equal '**Tool response**', result['content']
     assert_equal 'assistant', result['type']
-    assert_includes result['metadata'], 'tools'
-    assert_equal 1, result['metadata']['tools'].length
-    assert_equal 'test', result['metadata']['tools'].first['name']
+    assert result.key?('tools'), "Result should have tools key"
+    assert_equal 1, result['tools'].length
+    assert_equal 'test', result['tools'].first['name']
   end
 
   def test_openai_response_with_meta_data

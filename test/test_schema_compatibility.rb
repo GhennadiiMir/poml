@@ -48,10 +48,10 @@ class TestSchemaCompatibility < Minitest::Test
 
     result = Poml.process(markup: markup)
     
-    assert result['metadata']['tools']
-    assert_equal 1, result['metadata']['tools'].length
+    assert result['tools']
+    assert_equal 1, result['tools'].length
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal "calculate", tool['name']
     assert_equal "Perform calculations", tool['description']
     assert tool['parameters']
@@ -75,10 +75,10 @@ class TestSchemaCompatibility < Minitest::Test
 
     result = Poml.process(markup: markup)
     
-    assert result['metadata']['tools']
-    assert_equal 1, result['metadata']['tools'].length
+    assert result['tools']
+    assert_equal 1, result['tools'].length
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal "search", tool['name']
     assert_equal "Search for information", tool['description']
   end
@@ -206,10 +206,10 @@ class TestSchemaCompatibility < Minitest::Test
     
     result = Poml.process(markup: markup, format: 'dict')
     
-    assert result['metadata']['tools']
-    assert_equal 1, result['metadata']['tools'].length
+    assert result['tools']
+    assert_equal 1, result['tools'].length
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'calculate', tool['name']
     assert_equal 'Perform calculations', tool['description']
     assert_equal 'object', tool['type']
@@ -238,10 +238,10 @@ class TestSchemaCompatibility < Minitest::Test
     
     result = Poml.process(markup: markup, format: 'dict')
     
-    assert result['metadata']['tools']
-    assert_equal 1, result['metadata']['tools'].length
+    assert result['tools']
+    assert_equal 1, result['tools'].length
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'search', tool['name']
     assert_equal 'Search for information', tool['description']
     assert_equal 'object', tool['type']
@@ -268,8 +268,8 @@ class TestSchemaCompatibility < Minitest::Test
     
     result = Poml.process(markup: markup, format: 'dict')
     
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'format', tool['name']
     assert_equal 'Format text', tool['description']
     assert tool['properties']['text']
@@ -294,8 +294,8 @@ class TestSchemaCompatibility < Minitest::Test
     
     result = Poml.process(markup: markup, format: 'dict')
     
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'validate', tool['name']
     assert_equal 'Validate data', tool['description']
     assert tool['properties']['data']
@@ -382,15 +382,15 @@ class TestSchemaCompatibility < Minitest::Test
     
     result = Poml.process(markup: markup, format: 'dict')
     
-    assert result['metadata']['tools']
-    assert_equal 2, result['metadata']['tools'].length
+    assert result['tools']
+    assert_equal 2, result['tools'].length
     
-    tool_names = result['metadata']['tools'].map { |t| t['name'] }
+    tool_names = result['tools'].map { |t| t['name'] }
     assert_includes tool_names, 'old_tool'
     assert_includes tool_names, 'new_tool'
     
-    old_tool = result['metadata']['tools'].find { |t| t['name'] == 'old_tool' }
-    new_tool = result['metadata']['tools'].find { |t| t['name'] == 'new_tool' }
+    old_tool = result['tools'].find { |t| t['name'] == 'old_tool' }
+    new_tool = result['tools'].find { |t| t['name'] == 'new_tool' }
     
     assert old_tool['properties']['input']
     assert new_tool['properties']['output']

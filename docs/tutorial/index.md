@@ -6,6 +6,39 @@ Welcome to the comprehensive tutorial for the POML (Prompt Oriented Markup Langu
 
 POML is a markup language designed for creating structured, reusable AI prompts. It provides components for organizing content, managing templates, handling data, and integrating with various AI services.
 
+## Key Concepts for Ruby Implementation
+
+### Output Formats and Rendering
+
+The Ruby POML gem uses a **format-aware rendering system**:
+
+- **Default rendering**: Produces Markdown-like output optimized for readability
+- **HTML components**: Use `<output format="html"/>` for HTML output (`<h1>`, `<b>`, `<i>` tags)
+- **JSON/XML formats**: Use `<output format="json"/>` or `<output format="xml"/>` for structured data
+- **Text format**: Use `<output format="text"/>` for plain text output
+
+**Example - Getting HTML Output:**
+
+```ruby
+markup = <<~POML
+  <poml>
+    <role>Documentation Writer</role>
+    <h1>Main Title</h1>
+    <p>Content with <b>bold</b> and <i>italic</i> text.</p>
+    <output format="html"/>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['output']  # Contains HTML: <h1>Main Title</h1><p>Content with <b>bold</b>...
+```
+
+### Component Behavior
+
+- **Headers**: `<h1>Title</h1>` produces `# Title` by default, `<h1>Title</h1>` with HTML format
+- **Formatting**: `<b>bold</b>` produces `**bold**` by default, `<b>bold</b>` with HTML format  
+- **Structure**: Most components adapt their output based on the specified format
+
 ## Quick Start
 
 ```ruby
@@ -65,6 +98,55 @@ puts result['content']
 
 - **🎯 Multiple Output Formats**: Raw text, OpenAI Chat, LangChain, Pydantic, and more
 - **📝 Template Engine**: Variables, conditionals, loops, and meta variables
+
+## XML Mode and Component Rendering
+
+### Dual Rendering Architecture
+
+The Ruby POML implementation supports **dual rendering modes** that automatically adapt based on context:
+
+#### Standard Mode (Default)
+
+Components render to Markdown-like syntax for readability:
+
+- `<code>example</code>` → `` `example` ``
+- `<b>bold</b>` → `**bold**`
+- `<i>italic</i>` → `*italic*`
+
+#### XML Mode (with `syntax="xml"`)
+
+Components preserve XML structure with attributes:
+
+- `<code inline="true">example</code>` → `<code inline="true">example</code>`
+- `<b>bold text</b>` → `<b>bold text</b>`
+- `<list style="decimal">...` → `<list style="decimal">...`
+
+### Important XML Parsing Details
+
+**Component Disambiguation**: The parser uses precise boundary detection to distinguish between similar component names:
+
+- `<code>` tags are handled separately from `<code-block>` tags
+- Regex patterns use negative lookahead (`(?!-)`) to prevent false matches
+- This ensures proper XML parsing when multiple component types are present
+
+**Attribute Preservation**: When `syntax="xml"` is specified, component attributes are maintained in the output, enabling rich structured content while preserving XML compatibility.
+
+### Example: Context-Aware Rendering
+
+```ruby
+# Standard mode
+markup1 = '<poml><code>example</code></poml>'
+result1 = Poml.process(markup: markup1)
+# Output: `example`
+
+# XML mode
+markup2 = '<poml syntax="xml"><code inline="true">example</code></poml>'
+result2 = Poml.process(markup: markup2)  
+# Output: <code inline="true">example</code>
+```
+
+## Getting Started
+
 - **🔧 Tool Registration**: Enhanced tool definition with parameter conversion
 - **📊 Data Components**: Tables, objects, files, and structured data
 - **🖼️ Media Support**: Images with URL fetching and base64 encoding

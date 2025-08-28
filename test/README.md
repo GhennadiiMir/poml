@@ -118,6 +118,8 @@ test/
 3. **Test both success and error cases** - Ensure robust error handling
 4. **Include TestHelper** - For consistent test utilities
 5. **Follow Ruby conventions** - Standard Minitest patterns and assertions
+6. **Include new relevant tests in the test suite** using you debugging history of inline tests and new files created in test/debug
+7. Prefer using `bundle exec rake test` or `bundle exec rake test <single_test_file_path>`
 
 ### Adding New Tests
 

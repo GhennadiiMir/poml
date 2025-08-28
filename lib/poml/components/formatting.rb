@@ -5,8 +5,8 @@ module Poml
       apply_stylesheet
       content = @element.children.empty? ? @element.content : render_children
       
-      if xml_mode?
-        render_as_xml('b', content)
+      if xml_mode? || @context.output_format == 'html'
+        "<b>#{content}</b>"
       else
         "**#{content}**"
       end
@@ -19,8 +19,8 @@ module Poml
       apply_stylesheet
       content = @element.children.empty? ? @element.content : render_children
       
-      if xml_mode?
-        render_as_xml('i', content)
+      if xml_mode? || @context.output_format == 'html'
+        "<i>#{content}</i>"
       else
         "*#{content}*"
       end
@@ -33,8 +33,8 @@ module Poml
       apply_stylesheet
       content = @element.children.empty? ? @element.content : render_children
       
-      if xml_mode?
-        render_as_xml('u', content)
+      if xml_mode? || @context.output_format == 'html'
+        "<u>#{content}</u>"
       else
         # Markdown-style underline
         "__#{content}__"
@@ -48,8 +48,8 @@ module Poml
       apply_stylesheet
       content = @element.children.empty? ? @element.content : render_children
       
-      if xml_mode?
-        render_as_xml('s', content)
+      if xml_mode? || @context.output_format == 'html'
+        "<s>#{content}</s>"
       else
         "~~#{content}~~"
       end
@@ -62,8 +62,8 @@ module Poml
       apply_stylesheet
       content = @element.content.empty? ? render_children : @element.content
       
-      if xml_mode?
-        render_as_xml('span', content)
+      if xml_mode? || @context.output_format == 'html'
+        "<span>#{content}</span>"
       else
         content
       end
@@ -87,9 +87,12 @@ module Poml
       level = [level, 6].min # Cap at h6
       level = [level, 1].max # Minimum h1
       
-      if xml_mode?
-        render_as_xml('h', content, { level: level })
+      # Check output format preference
+      if xml_mode? || @context.output_format == 'html'
+        # HTML output format
+        "<h#{level}>#{content}</h#{level}>"
       else
+        # Default markdown format
         header_prefix = '#' * level
         if inline?
           content
@@ -121,6 +124,15 @@ module Poml
       apply_stylesheet
       
       content = @element.content.empty? ? render_children : @element.content
+      
+      # In XML mode, selectively unescape only parsing artifacts while preserving intentional entities
+      if xml_mode?
+        # Unescape quotes that were escaped during parsing
+        content = content.gsub('&quot;', '"').gsub('&apos;', "'")
+        # Handle double-escaped HTML entities - restore single escaping
+        content = content.gsub('&amp;lt;', '&lt;').gsub('&amp;gt;', '&gt;').gsub('&amp;amp;', '&amp;')
+      end
+      
       inline_attr = get_attribute('inline', true)
       lang = get_attribute('lang', '')
       
@@ -135,9 +147,21 @@ module Poml
       end
       
       if xml_mode?
-        attributes = { inline: is_inline }
+        # Only include attributes that were explicitly provided in the XML
+        attributes = {}
+        attributes[:inline] = get_attribute('inline') if has_attribute?('inline')
         attributes[:lang] = lang unless lang.empty?
         render_as_xml('code', content, attributes)
+      elsif @context.output_format == 'html'
+        if is_inline
+          "<code>#{content}</code>"
+        else
+          if lang.empty?
+            "<pre><code>#{content}</code></pre>"
+          else
+            "<pre><code class=\"language-#{lang}\">#{content}</code></pre>"
+          end
+        end
       else
         if is_inline
           "`#{content}`"
@@ -170,6 +194,83 @@ module Poml
         render_as_xml('section', content)
       else
         "#{content}"
+      end
+    end
+  end
+
+  # Code block component for multi-line code examples
+  class CodeBlockComponent < Component
+    def render
+      apply_stylesheet
+      
+      language = get_attribute('language', '')
+      content = @element.content
+      
+      # In XML mode, selectively unescape only quotes and ampersands that were 
+      # escaped during parsing, but preserve intentional HTML entities like &lt; &gt;
+      if xml_mode?
+        # Unescape quotes that were escaped during parsing
+        content = content.gsub('&quot;', '"').gsub('&apos;', "'")
+        # Handle double-escaped HTML entities - restore single escaping  
+        content = content.gsub('&amp;lt;', '&lt;').gsub('&amp;gt;', '&gt;').gsub('&amp;amp;', '&amp;')
+        
+        attributes = {}
+        attributes[:language] = language unless language.empty?
+        render_as_xml('code-block', content, attributes)
+      else
+        if language.empty?
+          "```\n#{content}\n```"
+        else
+          "```#{language}\n#{content}\n```"
+        end
+      end
+    end
+  end
+
+  # Callout component for highlighted information boxes
+  class CalloutComponent < Component
+    def render
+      apply_stylesheet
+      
+      type = get_attribute('type', 'info')
+      # If the element has children, render them (for mixed content like text + formatting)
+      # Otherwise, use the element's direct content
+      content = @element.children.empty? ? @element.content : render_children
+      
+      if xml_mode? || @context.output_format == 'html'
+        "<div class=\"callout callout-#{type}\">#{content}</div>"
+      else
+        # Markdown-style callout
+        prefix = case type.downcase
+        when 'warning'
+          '⚠️ '
+        when 'error', 'danger'
+          '❌ '
+        when 'success'
+          '✅ '
+        else
+          'ℹ️ '
+        end
+        
+        "#{prefix}#{content}\n\n"
+      end
+    end
+  end
+
+  # Blockquote component for quoted content
+  class BlockquoteComponent < Component
+    def render
+      apply_stylesheet
+      
+      content = @element.content.empty? ? render_children : @element.content
+      
+      if xml_mode? || @context.output_format == 'html'
+        "<blockquote>#{content}</blockquote>"
+      else
+        # Markdown-style blockquote
+        lines = content.split("\n")
+        quoted_lines = lines.map { |line| "> #{line}" }
+        "#{quoted_lines.join("\n")}\n\n"
       end
     end
   end

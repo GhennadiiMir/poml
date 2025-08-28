@@ -5,8 +5,8 @@ module Poml
   # Context object that holds variables, stylesheets, and processing state
   class Context
     attr_accessor :variables, :stylesheet, :chat, :texts, :source_path, :syntax, :header_level
-    attr_accessor :response_schema, :tools, :runtime_parameters, :disabled_components
-    attr_accessor :template_engine, :chat_messages, :custom_metadata, :output_format
+    attr_accessor :response_schema, :response_schema_with_metadata, :tools, :runtime_parameters, :disabled_components
+    attr_accessor :template_engine, :chat_messages, :custom_metadata, :output_format, :output_content
 
     def initialize(variables: {}, stylesheet: nil, chat: true, syntax: nil, source_path: nil, output_format: nil)
       @variables = variables || {}
@@ -24,6 +24,7 @@ module Poml
       @chat_messages = [] # Track structured chat messages
       @custom_metadata = {} # Track general metadata like title, description etc.
       @output_format = output_format # Track target output format for component behavior
+      @output_content = nil # Track content from <output> components
     end
 
     def xml_mode?
@@ -66,6 +67,19 @@ module Poml
       child.disabled_components = @disabled_components.dup
       child.chat_messages = @chat_messages # Share the same array reference
       child.custom_metadata = @custom_metadata # Share the same hash reference
+      child.output_format = @output_format # Copy output format
+      child.output_content = @output_content # Copy output content
+      child.template_engine = @template_engine # Copy template engine
+      
+      # Copy instance variables that components may set (like list context)
+      instance_variables.each do |var|
+        unless [:@variables, :@stylesheet, :@chat, :@syntax, :@header_level, 
+                :@response_schema, :@tools, :@runtime_parameters, :@disabled_components,
+                :@chat_messages, :@custom_metadata, :@output_format, :@output_content, :@template_engine].include?(var)
+          child.instance_variable_set(var, instance_variable_get(var))
+        end
+      end
+      
       child
     end
 

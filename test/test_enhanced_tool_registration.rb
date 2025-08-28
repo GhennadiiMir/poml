@@ -26,8 +26,8 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'config', tool['name']
     
     # Check that boolean conversion metadata is preserved but values are converted
@@ -63,7 +63,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'calculator', tool['name']
     
     # Check that number conversion works
@@ -102,7 +102,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'data_processor', tool['name']
     
     # Check that JSON conversion works
@@ -139,7 +139,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'api_client', tool['name']
     
     # Check that kebab-case keys are converted to camelCase
@@ -204,7 +204,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'complex_config', tool['name']
     
     # Check that nested kebab-case keys are converted
@@ -259,8 +259,8 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'enhanced_tool', tool['name']
     
     # Check both key conversion and type conversion
@@ -303,7 +303,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
 
     # Tool should be registered normally
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'simple_tool', tool['name']
     
     # Schema should remain unchanged since no conversion attributes
@@ -339,8 +339,8 @@ class TestEnhancedToolRegistration < Minitest::Test
     result = Poml.process(markup: markup)
     
     # Tool should still be registered despite conversion errors
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'error_tool', tool['name']
     
     # Schema should be valid JSON and conversion errors handled gracefully
@@ -371,7 +371,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     POML
 
     result = Poml.process(markup: markup)
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     
     # Schema should be stored as JSON string
     assert tool['schema'].is_a?(String), "Schema should be stored as JSON string"
@@ -407,7 +407,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     POML
 
     result = Poml.process(markup: markup)
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     schema = JSON.parse(tool['schema'])
     
     # All keys should be converted to camelCase
@@ -450,7 +450,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     POML
 
     result = Poml.process(markup: markup)
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     schema = JSON.parse(tool['schema'])
     
     # Check outer level conversion
@@ -487,7 +487,7 @@ class TestEnhancedToolRegistration < Minitest::Test
     POML
 
     result = Poml.process(markup: markup)
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     
     assert_equal 'meta_enhanced', tool['name']
     assert_equal 'Meta component test', tool['description']

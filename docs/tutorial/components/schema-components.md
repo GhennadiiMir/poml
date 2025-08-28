@@ -181,7 +181,7 @@ markup = <<~POML
 POML
 
 result = Poml.process(markup: markup)
-puts result['metadata']['tools']
+puts result['tools']  # Tools are now at top level
 ```
 
 ### Multiple Tool Definitions
@@ -566,7 +566,7 @@ end
 ```ruby
 def validate_tool_definitions(markup)
   result = Poml.process(markup: markup)
-  tools = result['metadata']['tools']
+  tools = result['tools']  # Tools are now at top level
   
   tools.each do |tool|
     required_fields = ['description', 'parameters']

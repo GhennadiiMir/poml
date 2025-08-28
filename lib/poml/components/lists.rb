@@ -5,52 +5,54 @@ module Poml
       apply_stylesheet
       
       if xml_mode?
-        # In XML mode, lists don't exist - items are rendered directly
-        @element.children.map do |child|
+        # In XML mode, preserve list structure with proper wrapping
+        list_style = if @element.tag_name.to_s == 'numbered-list'
+          'decimal'
+        else
+          get_attribute('listStyle', 'dash')
+        end
+        
+        items_content = @element.children.map do |child|
           if child.tag_name == :item
             Components.render_element(child, @context)
           end
         end.compact.join('')
-      else
-        list_style = get_attribute('listStyle', 'dash')
-        items = []
-        index = 0
         
-        @element.children.each do |child|
-          if child.tag_name == :item
-            index += 1
-            
-            bullet = case list_style
-            when 'decimal', 'number', 'numbered'
-              "#{index}. "
-            when 'star'
-              "* "
-            when 'plus'
-              "+ "
-            when 'dash', 'bullet', 'unordered'
-              "- "
-            else
-              "- "
-            end
-            
-            # Render all content (text + formatting) together
-            content = if child.children.any?
-              Components.render_element(child, @context).strip
-            else
-              child.content.strip
-            end
-            
-            items << "#{bullet}#{content}"
-          end
+        if @element.tag_name.to_s == 'numbered-list'
+          "<numbered-list style=\"#{list_style}\">\n#{items_content}</numbered-list>\n"
+        else
+          "<list style=\"#{list_style}\">\n#{items_content}</list>\n"
+        end
+      else
+        # Store list style in context for child components to use
+        original_list_style = @context.instance_variable_get(:@list_style)
+        original_list_index = @context.instance_variable_get(:@list_index)
+        
+        # Determine list style - check if this is a numbered list
+        list_style = if @element.tag_name.to_s == 'numbered-list'
+          'numbered'
+        else
+          get_attribute('listStyle', 'dash')
         end
         
-        return "\n\n" if items.empty?
+        @context.instance_variable_set(:@list_style, list_style)
+        @context.instance_variable_set(:@list_index, 0)
         
-        list_content = items.join("\n")
+        # Render all children - they will auto-format as list items
+        content = @element.children.map do |child|
+          Components.render_element(child, @context)
+        end.join('')
+        
+        # Restore original context
+        @context.instance_variable_set(:@list_style, original_list_style)
+        @context.instance_variable_set(:@list_index, original_list_index)
+        
+        return "\n\n" if content.strip.empty?
+        
         if inline?
-          list_content
+          content
         else
-          list_content + "\n\n"
+          content + "\n\n"
         end
       end
     end
@@ -62,11 +64,12 @@ module Poml
       apply_stylesheet
       
       if xml_mode?
-        content = @element.content.empty? ? render_children : @element.content.strip
+        # Always render children to properly handle mixed content (text + components)
+        content = render_children
         "<item>#{content}</item>\n"
       else
         # For raw mode, handle mixed content properly
-        if @element.children.any?
+        content = if @element.children.any?
           # Render text and child elements together
           result = ""
           @element.children.each do |child|
@@ -79,6 +82,31 @@ module Poml
           result.strip
         else
           @element.content.strip
+        end
+        
+        # Check if we're inside a list and format accordingly
+        list_style = @context.instance_variable_get(:@list_style)
+        if list_style
+          current_index = @context.instance_variable_get(:@list_index) || 0
+          new_index = current_index + 1
+          @context.instance_variable_set(:@list_index, new_index)
+          
+          bullet = case list_style
+          when 'decimal', 'number', 'numbered'
+            "#{new_index}. "
+          when 'star'
+            "* "
+          when 'plus'
+            "+ "
+          when 'dash', 'bullet', 'unordered'
+            "- "
+          else
+            "- "
+          end
+          
+          "#{bullet}#{content}\n"
+        else
+          content
         end
       end
     end

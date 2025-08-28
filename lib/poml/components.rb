@@ -13,6 +13,7 @@ require_relative 'components/formatting'
 require_relative 'components/media'
 require_relative 'components/utilities'
 require_relative 'components/meta'
+require_relative 'components/tools'
 require_relative 'components/template'
 require_relative 'components/output_schema'
 require_relative 'components/tool_definition'
@@ -48,6 +49,11 @@ module Poml
     br: NewlineComponent,
     newline: NewlineComponent,
     code: CodeComponent,
+    'code-block': CodeBlockComponent,
+    'codeblock': CodeBlockComponent,
+    callout: CalloutComponent,
+    blockquote: BlockquoteComponent,
+    quote: BlockquoteComponent,
     section: SubContentComponent,
     subcontent: SubContentComponent,
     
@@ -85,6 +91,7 @@ module Poml
     
     # List components
     list: ListComponent,
+    'numbered-list': ListComponent,  # alias for numbered lists
     item: ItemComponent,
     
     # Layout components
@@ -134,6 +141,10 @@ module Poml
     # Meta components
     meta: MetaComponent,
     Meta: MetaComponent,
+    
+    # Tools components  
+    tools: ToolsComponent,
+    Tools: ToolsComponent,
     'output-schema': OutputSchemaComponent,
     'outputschema': OutputSchemaComponent,
     OutputSchema: OutputSchemaComponent,

@@ -25,16 +25,16 @@ class MinimalToolTest < Minitest::Test
     
     puts "\nAssertion checks:"
     puts "Has metadata key? #{result.key?('metadata')}"
-    puts "Has tools key? #{result['metadata'].key?('tools')}"
-    puts "Tools count: #{result['metadata']['tools'].length}"
+    puts "Has tools key? #{result.key?('tools')}"
+    puts "Tools count: #{result['tools'].length}"
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     puts "Tool name: #{tool['name']}"
     puts "Tool description includes 'arithmetic'? #{tool['description'].include?('arithmetic')}"
     
     assert result.key?('metadata')
-    assert result['metadata'].key?('tools')
-    assert_equal 1, result['metadata']['tools'].length
+    assert result.key?('tools')
+    assert_equal 1, result['tools'].length
     
     assert_equal 'calculator', tool['name']
     assert_includes tool['description'], 'arithmetic'

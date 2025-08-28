@@ -6,7 +6,9 @@ Welcome to the POML Ruby Gem documentation - a Ruby implementation of the Prompt
 
 ## About This Implementation
 
-This is a **Ruby port** of the original [POML library](https://github.com/microsoft/poml) developed by Microsoft. This Ruby gem is designed to be **fully compatible** with the original POML specification and closely follows the development of the original library to maintain feature parity.
+This is a **Ruby port** of the original [POML library](https://github.com/microsoft/poml) developed by Microsoft. This Ruby gem is designed to be **fully compatible** with the original POML specification and has been **structurally aligned** with the original library to maintain complete compatibility.
+
+> **✅ Structural Compatibility**: Version 0.0.7 introduces full structural alignment with the original library, including correct tools positioning and chat component behavior. **78.4% of tests passing** with major functionality fully operational.
 
 ## Key Features
 
@@ -29,9 +31,11 @@ Basic usage:
 ```ruby
 require 'poml'
 
-# Process a POML document
-result = Poml.process(markup: '<poml><role>Assistant</role><task>Help users</task></poml>')
+# Process a POML document with tools
+markup = '<poml><tool-definition name="search">Search tool</tool-definition><role>Assistant</role></poml>'
+result = Poml.process(markup: markup)
 puts result['content']
+puts result['tools']    # Tools are at top level
 ```
 
 ## Documentation Sections

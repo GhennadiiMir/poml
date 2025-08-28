@@ -46,7 +46,7 @@ markup = <<~POML
 POML
 
 result = Poml.process(markup: markup)
-puts result['metadata']['tools']
+puts result['tools']  # Tools are now at top level
 ```
 
 ### Using meta Component
@@ -352,7 +352,7 @@ markup = <<~POML
 POML
 
 result = Poml.process(markup: markup)
-puts "Registered #{result['metadata']['tools'].length} tools"
+puts "Registered #{result['tools'].length} tools"
 ```
 
 ### Mixed Registration Formats
@@ -529,7 +529,7 @@ POML
 result = Poml.process(markup: markup)
 
 # Enhanced storage format ensures consistency:
-tool = result['metadata']['tools'][0]
+tool = result['tools'][0]  # Tools are now at top level
 puts tool['name']         # "generate_docs"
 puts tool['description']  # "Generate API documentation from schema"
 puts tool['parameters']   # Properly structured parameters object
@@ -577,7 +577,7 @@ puts result  # Contains both messages and tool definitions
 ```ruby
 result = Poml.process(markup: markup, format: 'openaiResponse')
 
-puts result['metadata']['tools']  # Tools available in metadata
+puts result['tools']  # Tools available at top level
 puts result['content']            # Formatted prompt content
 ```
 
@@ -589,7 +589,7 @@ puts result['content']            # Formatted prompt content
 def validate_tool_definition(markup)
   begin
     result = Poml.process(markup: markup)
-    tools = result['metadata']['tools']
+    tools = result['tools']  # Tools are now at top level
     
     tools.each do |tool|
       errors = []
@@ -646,7 +646,7 @@ class SafeToolProcessor
       result = Poml.process(markup: markup, context: context)
       
       # Validate tool structure
-      tools = result['metadata']['tools'] || []
+      tools = result['tools'] || []  # Tools are now at top level
       valid_tools = tools.select { |tool| valid_tool?(tool) }
       
       {

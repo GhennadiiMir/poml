@@ -200,6 +200,15 @@ module Poml
       # Override this in inline components
       false
     end
+
+    def unescape_xml_entities(text)
+      # Unescape XML entities that were escaped during preprocessing
+      text.gsub('&amp;', '&')
+          .gsub('&lt;', '<')
+          .gsub('&gt;', '>')
+          .gsub('&quot;', '"')
+          .gsub('&apos;', "'")
+    end
     
     def self.inline_component_classes
       # List of component classes that should be treated as inline
@@ -233,6 +242,12 @@ module Poml
     def self.render_element(element, context)
       # Try to find component using multiple key formats for compatibility
       tag_name = element.tag_name
+      
+      # In HTML output format, preserve HTML elements as-is
+      if context.output_format == 'html' && is_html_element?(element)
+        return render_html_element_as_is(element, context)
+      end
+      
       component_class = COMPONENT_MAPPING[tag_name] || 
                        COMPONENT_MAPPING[tag_name.to_s] || 
                        COMPONENT_MAPPING[tag_name.to_sym]
@@ -244,6 +259,38 @@ module Poml
       
       component = component_class.new(element, context)
       component.render
+    end
+    
+    private
+    
+    def self.is_html_element?(element)
+      # Common HTML elements that should be preserved in HTML format
+      html_elements = [:b, :i, :u, :strong, :em, :span, :div, :p, :h1, :h2, :h3, :h4, :h5, :h6, 
+                      :table, :thead, :tbody, :tfoot, :tr, :th, :td, :ul, :ol, :li, :a, :img, :code]
+      
+      return html_elements.include?(element.tag_name)
+    end
+    
+    def self.render_html_element_as_is(element, context)
+      tag_name = element.tag_name.to_s
+      
+      # Build attributes string
+      attr_string = ""
+      if element.attributes && !element.attributes.empty?
+        attr_string = element.attributes.map { |k, v| %{#{k}="#{v}"} }.join(" ")
+        attr_string = " " + attr_string
+      end
+      
+      # Render children
+      children_content = element.children.map { |child| render_element(child, context) }.join('')
+      content = children_content.empty? ? element.content : children_content
+      
+      # Return as HTML element
+      if content.empty?
+        "<#{tag_name}#{attr_string} />"
+      else
+        "<#{tag_name}#{attr_string}>#{content}</#{tag_name}>"
+      end
     end
   end
 end

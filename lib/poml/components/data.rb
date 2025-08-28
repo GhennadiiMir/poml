@@ -25,9 +25,19 @@ module Poml
         parse_records_attribute(records_attr)
       elsif data_attr
         parse_records_attribute(data_attr)
-      elsif @element.children.any? { |child| child.tag_name == :tr }
+      elsif @element.children.any? { |child| child.tag_name == :tr || child.tag_name == :thead || child.tag_name == :tbody || child.tag_name == :tfoot }
         # Handle HTML-style table markup
-        parse_html_table_children
+        if @context.output_format == 'html' || xml_mode?
+          # In HTML or XML mode, render children directly to preserve nested components
+          children_content = render_children
+          if xml_mode?
+            return "<table>\n#{children_content}</table>\n"
+          else
+            return children_content
+          end
+        else
+          parse_html_table_children
+        end
       else
         { records: [], columns: [] }
       end
@@ -35,11 +45,13 @@ module Poml
       # Apply column and record selection
       data = apply_selection(data, selected_columns, selected_records, max_records, max_columns)
       
-      # Check syntax preference
+      # Check syntax preference and output format
       result = if syntax == 'tsv' || syntax == 'csv'
         render_table_raw(data, syntax)
       elsif xml_mode?
         render_table_xml(data)
+      elsif @context.output_format == 'html'
+        render_table_html(data)
       else
         render_table_markdown(data)
       end
@@ -201,12 +213,10 @@ module Poml
       records = []
       columns = []
       
-      # Extract rows from tr children
-      @element.children.each do |child|
-        next unless child.tag_name == :tr
-        
+      # Extract rows from tr children (including nested in thead/tbody)
+      find_tr_elements(@element).each do |tr_element|
         row_data = {}
-        child.children.each_with_index do |cell, index|
+        tr_element.children.each_with_index do |cell, index|
           next unless cell.tag_name == :td || cell.tag_name == :th
           
           # Get cell content (render children to get text)
@@ -228,6 +238,21 @@ module Poml
       end
       
       { records: records, columns: columns }
+    end
+    
+    def find_tr_elements(element)
+      tr_elements = []
+      
+      element.children.each do |child|
+        if child.tag_name == :tr
+          tr_elements << child
+        elsif child.tag_name == :thead || child.tag_name == :tbody || child.tag_name == :tfoot
+          # Recursively find tr elements in table sections
+          tr_elements.concat(find_tr_elements(child))
+        end
+      end
+      
+      tr_elements
     end
     
     def apply_selection(data, selected_columns, selected_records, max_records, max_columns)
@@ -409,6 +434,50 @@ module Poml
     
     def escape_xml(text)
       text.to_s.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    end
+    
+    def render_table_html(data)
+      records = data[:records]
+      columns = data[:columns]
+      
+      return '' if records.empty?
+      
+      # If no columns specified, infer from first record
+      if columns.empty? && records.first.is_a?(Hash)
+        columns = records.first.keys.map { |key| { field: key, header: key } }
+      end
+      
+      return '' if columns.empty?
+      
+      # Build HTML table structure
+      result = []
+      result << '<table>'
+      result << '  <thead>'
+      result << '    <tr>'
+      columns.each do |col|
+        result << "      <th>#{escape_html(col[:header] || col[:field])}</th>"
+      end
+      result << '    </tr>'
+      result << '  </thead>'
+      result << '  <tbody>'
+      
+      records.each do |record|
+        result << '    <tr>'
+        columns.each do |col|
+          value = record[col[:field]]
+          result << "      <td>#{escape_html(value.nil? ? '' : value.to_s)}</td>"
+        end
+        result << '    </tr>'
+      end
+      
+      result << '  </tbody>'
+      result << '</table>'
+      
+      result.join("\n")
+    end
+    
+    def escape_html(text)
+      text.to_s.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub('"', '&quot;')
     end
   end
 

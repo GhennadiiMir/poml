@@ -170,10 +170,10 @@ class PomlMarkupComponentsTest < Minitest::Test
     result = Poml.to_dict(content)
     
     assert result.key?('metadata')
-    assert result['metadata'].key?('tools')
-    assert_equal 1, result['metadata']['tools'].length
+    assert result.key?('tools')
+    assert_equal 1, result['tools'].length
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'calculator', tool['name']
     assert_includes tool['description'], 'arithmetic'
   end

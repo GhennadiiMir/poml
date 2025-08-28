@@ -2,7 +2,12 @@ module Poml
   # Text component for plain text content
   class TextComponent < Component
     def render
-      @element.content
+      # If there are child elements, render them; otherwise return the content
+      if @element.children.empty?
+        @element.content
+      else
+        render_children
+      end
     end
   end
 

@@ -2,6 +2,77 @@
 
 POML provides comprehensive text formatting components that work seamlessly with templates and other POML features. These components support both block and inline rendering modes.
 
+## Format-Aware Rendering
+
+Formatting components automatically adapt their output based on the specified output format:
+
+### Default (Markdown) Output
+
+```ruby
+markup = <<~POML
+  <poml>
+    <h1>Main Title</h1>
+    <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['content']
+```
+
+**Output:**
+
+```text
+# Main Title
+
+Text with **bold** and *italic* formatting.
+```
+
+### HTML Output Format
+
+```ruby
+markup = <<~POML
+  <poml>
+    <h1>Main Title</h1>
+    <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
+    <output format="html"/>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['output']
+```
+
+**Output:**
+
+```html
+<h1>Main Title</h1>
+<p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
+```
+
+### Text-Only Output
+
+```ruby
+markup = <<~POML
+  <poml>
+    <h1>Main Title</h1>
+    <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
+    <output format="text"/>
+  </poml>
+POML
+
+result = Poml.process(markup: markup)
+puts result['output']
+```
+
+**Output:**
+
+```text
+Main Title
+
+Text with bold and italic formatting.
+```
+
 ## Text Formatting
 
 ### Bold Text - `<b>`

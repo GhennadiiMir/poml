@@ -149,10 +149,12 @@ module Poml
     def render
       apply_stylesheet
       
-      content = @element.content.empty? ? render_children : @element.content
+      # If the element has children, render them (for mixed content like text + formatting)
+      # Otherwise, use the element's direct content
+      content = @element.children.empty? ? @element.content : render_children
       
-      if xml_mode?
-        render_as_xml('p', content)
+      if xml_mode? || @context.output_format == 'html'
+        "<p>#{content}</p>"
       else
         render_with_inline_support(content)
       end

@@ -90,9 +90,9 @@ class TestInlineRendering < Minitest::Test
     inline_markup = '<h1 inline="true">Test Header</h1>'
     xml_result = Poml.process(markup: inline_markup, format: 'raw', syntax: 'xml', chat: false)
     # In XML mode, should still render XML but with inline attributes
-    assert_includes xml_result, "<h"
+    assert_includes xml_result, "<h1"
     assert_includes xml_result, "Test Header"
-    assert_includes xml_result, "</h>"
+    assert_includes xml_result, "</h1>"
   end
 
   def test_mixed_inline_and_block_components

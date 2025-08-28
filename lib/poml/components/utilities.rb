@@ -18,10 +18,13 @@ module Poml
       if xml_mode?
         render_as_xml('ai-msg', content, { speaker: 'ai' })
       else
-        # In raw format with chat mode, return empty to avoid duplicate content
-        # But allow content rendering when chat is false (templates, etc.)
-        if @context.output_format == 'raw' && @context.chat
-          ''
+        case @context.output_format
+        when 'raw'
+          if @context.chat
+            ""  # Chat components don't render content in raw format when in chat mode
+          else
+            content
+          end
         else
           content
         end
@@ -48,10 +51,9 @@ module Poml
       if xml_mode?
         render_as_xml('user-msg', content, { speaker: 'human' })
       else
-        # In raw format with chat mode, return empty to avoid duplicate content
-        # But allow content rendering when chat is false (templates, etc.)
+        # In raw format, chat components don't render content only when in chat mode
         if @context.output_format == 'raw' && @context.chat
-          ''
+          ""
         else
           content
         end
@@ -78,10 +80,9 @@ module Poml
       if xml_mode?
         render_as_xml('system-msg', content, { speaker: 'system' })
       else
-        # In raw format with chat mode, return empty to avoid duplicate content
-        # But allow content rendering when chat is false (templates, etc.)
+        # In raw format, chat components don't render content only when in chat mode
         if @context.output_format == 'raw' && @context.chat
-          ''
+          ""
         else
           content
         end

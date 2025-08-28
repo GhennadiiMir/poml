@@ -2,6 +2,48 @@
 
 POML supports multiple output formats to integrate seamlessly with different AI services, frameworks, and applications.
 
+## Two Types of Format Control
+
+POML provides **two distinct levels** of format control:
+
+### 1. Output Structure Formats
+
+Control the **overall structure** of the result (API format):
+
+- `format: 'raw'` - Plain text with role boundaries
+- `format: 'dict'` - Ruby Hash with metadata (default)
+- `format: 'openai_chat'` - OpenAI message arrays
+- `format: 'openaiResponse'` - Standardized AI response
+- `format: 'langchain'` - LangChain compatible
+- `format: 'pydantic'` - Python interoperability
+
+### 2. Content Rendering Formats
+
+Control how **components render** within the content using `<output format="..."/>`:
+
+- `format="markdown"` - Markdown syntax (default): `# Header`, `**bold**`
+- `format="html"` - HTML tags: `<h1>Header</h1>`, `<b>bold</b>`
+- `format="text"` - Plain text without markup
+- `format="json"` - JSON representation of content
+- `format="xml"` - XML-structured content
+
+**Example combining both:**
+
+```ruby
+markup = <<~POML
+  <poml>
+    <role>Writer</role>
+    <h1>Article Title</h1>
+    <p>Content with <b>emphasis</b></p>
+    <output format="html"/>  <!-- Content format -->
+  </poml>
+POML
+
+# Structure format
+result = Poml.process(markup: markup, format: 'dict')
+puts result['output']  # HTML: <h1>Article Title</h1><p>Content with <b>emphasis</b></p>
+```
+
 ## Available Formats
 
 POML provides six main output formats:

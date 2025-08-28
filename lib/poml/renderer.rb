@@ -62,27 +62,103 @@ module Poml
       
       # Include additional metadata if present
       metadata['response_schema'] = @context.response_schema if @context.response_schema
-      metadata['tools'] = @context.tools if @context.tools && !@context.tools.empty?
       metadata['runtime_parameters'] = @context.runtime_parameters if @context.runtime_parameters && !@context.runtime_parameters.empty?
       
-      {
+      # Add schemas array for backward compatibility with tests
+      if @context.response_schema_with_metadata
+        metadata['schemas'] = [@context.response_schema_with_metadata]
+      end
+      
+      result = {
         'content' => content,
         'metadata' => metadata
       }
+      
+      # Include tools at top level (matching original implementation)
+      result['tools'] = @context.tools && !@context.tools.empty? ? @context.tools : []
+      
+      # Include output content if present
+      result['output'] = @context.output_content if @context.output_content
+      
+      result
     end
 
     def render_openai_chat(elements)
       # First render to collect structured messages
       content = render_raw(elements)
       
-      # Use structured messages if available
-      if @context.respond_to?(:chat_messages) && !@context.chat_messages.empty?
+      # Build messages array
+      messages = if @context.respond_to?(:chat_messages) && !@context.chat_messages.empty?
         @context.chat_messages
       elsif @context.chat
         parse_chat_messages(content)
       else
         [{ 'role' => 'user', 'content' => content }]
       end
+      
+      # If no tools, return just messages array for compatibility with tests
+      if !@context.tools || @context.tools.empty?
+        return messages
+      end
+      
+      # If tools are present, return object with messages and tools
+      # Convert to OpenAI tool format
+      openai_tools = @context.tools.map do |tool|
+        {
+          'type' => 'function',
+          'function' => {
+            'name' => tool['name'],
+            'description' => tool['description'],
+            'parameters' => convert_to_openai_schema(tool)
+          }
+        }
+      end
+      
+      {
+        'messages' => messages,
+        'tools' => openai_tools
+      }
+    end
+    
+    def convert_to_openai_schema(tool)
+      # If tool already has a schema field (from JSON format), use it
+      if tool['schema']
+        begin
+          return JSON.parse(tool['schema']) if tool['schema'].is_a?(String)
+          return tool['schema'] if tool['schema'].is_a?(Hash)
+        rescue JSON::ParserError
+          # Fall through to build from parameters
+        end
+      end
+      
+      # Build schema from flattened parameters (declarative format)
+      if tool['parameters']
+        if tool['parameters'].is_a?(Hash) && tool['parameters']['type'] == 'object'
+          # Already in JSON schema format
+          return tool['parameters']
+        else
+          # Convert flattened format to JSON schema
+          properties = {}
+          required = []
+          
+          tool['parameters'].each do |param_name, param_def|
+            properties[param_name] = {
+              'type' => param_def['type']
+            }
+            properties[param_name]['description'] = param_def['description'] if param_def['description']
+            required << param_name if param_def['required']
+          end
+          
+          return {
+            'type' => 'object',
+            'properties' => properties,
+            'required' => required
+          }
+        end
+      end
+      
+      # Fallback empty schema
+      { 'type' => 'object', 'properties' => {}, 'required' => [] }
     end
 
     def render_openai_response(elements)
@@ -95,17 +171,24 @@ module Poml
         'type' => 'assistant'
       }
       
+      # Include messages if chat components were used
+      if @context.respond_to?(:chat_messages) && !@context.chat_messages.empty?
+        response['messages'] = @context.chat_messages
+      end
+      
       # Include metadata if available
       metadata = {}
       metadata['variables'] = @context.variables if @context.variables && !@context.variables.empty?
       metadata['response_schema'] = @context.response_schema if @context.response_schema
-      metadata['tools'] = @context.tools if @context.tools && !@context.tools.empty?
       metadata['runtime_parameters'] = @context.runtime_parameters if @context.runtime_parameters && !@context.runtime_parameters.empty?
       
       # Include custom metadata (title, description, etc.)
       metadata.merge!(@context.custom_metadata) if @context.custom_metadata && !@context.custom_metadata.empty?
       
       response['metadata'] = metadata unless metadata.empty?
+      
+      # Include tools at top level (matching updated structure)
+      response['tools'] = @context.tools && !@context.tools.empty? ? @context.tools : []
       
       response
     end

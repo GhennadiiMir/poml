@@ -24,12 +24,18 @@ module Poml
       # Handle both raw variable names and template expressions
       condition = condition.strip
       
+      # Check for negation operator at the beginning
+      negate = false
+      if condition.start_with?('!')
+        negate = true
+        condition = condition[1..-1].strip
+      end
+      
       # First, substitute any template variables in the condition
       substituted_condition = @context.template_engine.substitute(condition)
       
-      # If it's a template expression, it may have been pre-substituted
-      # If condition looks like a substituted value, try to parse it
-      case substituted_condition
+      # Evaluate the condition
+      result = case substituted_condition
       when 'true'
         true
       when 'false'
@@ -47,13 +53,13 @@ module Poml
         # Perform comparison
         case operator
         when '>'
-          left_value > right_value
+          compare_values(left_value, right_value, :>)
         when '<'
-          left_value < right_value
+          compare_values(left_value, right_value, :<)
         when '>='
-          left_value >= right_value
+          compare_values(left_value, right_value, :>=)
         when '<='
-          left_value <= right_value
+          compare_values(left_value, right_value, :<=)
         when '=='
           left_value == right_value
         when '!='
@@ -71,11 +77,19 @@ module Poml
         result = @context.template_engine.evaluate_attribute_expression(substituted_condition)
         convert_to_boolean(result)
       end
+      
+      # Apply negation if needed
+      negate ? !result : result
     end
     
     def convert_operand(operand)
       # First substitute any template variables
       substituted = @context.template_engine.substitute(operand)
+      
+      # Handle quoted strings
+      if substituted =~ /^['"](.*)['"]$/
+        return $1
+      end
       
       # Try to convert to number if possible, otherwise keep as string
       if substituted =~ /^-?\d+$/
@@ -84,6 +98,16 @@ module Poml
         substituted.to_f
       else
         substituted
+      end
+    end
+    
+    def compare_values(left, right, operator)
+      # Handle type mismatches gracefully
+      begin
+        left.send(operator, right)
+      rescue ArgumentError
+        # If types are incompatible, try to convert both to strings and compare
+        left.to_s.send(operator, right.to_s)
       end
     end
     
@@ -117,24 +141,41 @@ module Poml
       items = evaluate_items(items_expr)
       return '' unless items.is_a?(Array)
       
-      # Store original content of elements to avoid mutation
-      original_contents = store_original_contents(@element)
-      
-      # Render content for each item
+      # Render content for each item without mutating original elements
       results = []
       items.each_with_index do |item, index|
-        # Restore original content before each iteration
-        restore_original_contents(@element, original_contents)
-        
         # Create child context with loop variable
         child_context = @context.create_child_context
         child_context.variables[variable] = item
         child_context.variables['loop'] = { 'index' => index + 1 }  # 1-based index
         
-        # Render children with loop variable substitution
+        # Update template engine context to use new variables
+        child_context.template_engine = Poml::TemplateEngine.new(child_context)
+        
+        # Ensure list index is synchronized with parent context
+        if @context.instance_variable_get(:@list_style)
+          # Copy current list index from parent to child before processing
+          current_list_index = @context.instance_variable_get(:@list_index) || 0
+          child_context.instance_variable_set(:@list_index, current_list_index)
+        end
+        
+        # Process each child element in the child context
         item_content = @element.children.map do |child|
-          render_element_with_substitution(child, child_context)
+          # Create a deep copy of the child element to avoid mutations
+          child_copy = deep_copy_element(child)
+          
+          # Process templates in the copied element
+          process_templates_in_element(child_copy, child_context)
+          
+          # Render the processed element
+          Components.render_element(child_copy, child_context)
         end.join('')
+        
+        # Update parent context with the list index from child context
+        if @context.instance_variable_get(:@list_style)
+          updated_list_index = child_context.instance_variable_get(:@list_index)
+          @context.instance_variable_set(:@list_index, updated_list_index)
+        end
         
         results << item_content
       end
@@ -144,62 +185,27 @@ module Poml
     
     private
     
-    def store_original_contents(element)
-      contents = {}
-      contents[element.object_id] = element.content.dup if element.content
-      
-      element.children.each do |child|
-        contents.merge!(store_original_contents(child))
-      end
-      
-      contents
+    def deep_copy_element(element)
+      # Create a new element with the same properties
+      Element.new(
+        tag_name: element.tag_name,
+        attributes: element.attributes.dup,
+        content: element.content.dup,
+        children: element.children.map { |child| deep_copy_element(child) }
+      )
     end
     
-    def restore_original_contents(element, original_contents)
-      if original_contents[element.object_id]
-        element.content = original_contents[element.object_id].dup
-      end
-      
-      element.children.each do |child|
-        restore_original_contents(child, original_contents)
-      end
-    end
-    
-    private
-    
-    def render_element_with_substitution(element, context)
-      # First substitute in the element's own content if it has template variables
+    def process_templates_in_element(element, context)
+      # Process template variables in the element's content
       if element.content && element.content.include?('{{')
         element.content = context.template_engine.substitute(element.content)
       end
       
-      # If this is a text element, return substituted content directly
-      if element.tag_name == :text
-        return element.content
-      end
-      
-      # For non-text elements, recursively substitute in their children
-      substitute_in_element(element, context)
-      Components.render_element(element, context)
-    end
-    
-    def substitute_in_element(element, context)
-      # Substitute in the element's own content
-      if element.content && element.content.include?('{{')
-        element.content = context.template_engine.substitute(element.content)
-      end
-      
-      # Recursively substitute variables in children
+      # Recursively process templates in children
       element.children.each do |child|
-        if child.tag_name == :text && child.content.include?('{{')
-          child.content = context.template_engine.substitute(child.content)
-        else
-          substitute_in_element(child, context)
-        end
+        process_templates_in_element(child, context)
       end
     end
-    
-    private
     
     def evaluate_items(items_expr)
       # Handle both raw variable names and template expressions

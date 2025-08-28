@@ -33,9 +33,27 @@ module Poml
         if @context.response_schema
           raise Poml::Error, "Multiple output-schema elements are not allowed. Only one response schema per document is supported."
         end
+
+        # Store the schema with metadata structure expected by tests
+        schema_with_metadata = {
+          'schema' => schema
+        }
         
-        # Store the schema directly for simplicity
+        # Add name if provided
+        if _name
+          schema_with_metadata['name'] = _name
+        end
+        
+        # Add description if provided
+        if _description
+          schema_with_metadata['description'] = _description
+        end
+        
+        # Store the schema directly for simplicity (this is what the renderer uses for response_schema)
         @context.response_schema = schema
+        
+        # Also store the structured version for the schemas array
+        @context.response_schema_with_metadata = schema_with_metadata
       end
       
       # Meta-like components don't produce output

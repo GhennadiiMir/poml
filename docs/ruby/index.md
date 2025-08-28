@@ -124,7 +124,7 @@ markup = <<~POML
 POML
 
 result = Poml.process(markup: markup)
-puts "Tools: #{result['metadata']['tools']}"
+puts "Tools: #{result['tools']}"  # Tools are now at top level
 ```
 
 ## API Reference
@@ -145,12 +145,12 @@ Process a POML document and return the rendered result.
 A hash containing:
 
 * `content`: The rendered prompt content
+* `tools`: Registered tools (top-level array)  
 * `metadata`: Document metadata including:
   * `chat`: Whether the document uses chat format
   * `stylesheet`: Applied stylesheets
   * `variables`: Template variables used
   * `response_schema`: Response schema if defined
-  * `tools`: Registered tools if any
 
 #### Example
 
@@ -161,6 +161,7 @@ result = Poml.process(
 )
 
 puts result['content']     # Rendered content
+puts result['tools']       # Tools array (top-level)
 puts result['metadata']    # Metadata hash
 ```
 

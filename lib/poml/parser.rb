@@ -35,6 +35,9 @@ module Poml
       # Pre-process to handle JSON in attributes (convert \" to &quot; inside attribute values)
       content = preprocess_json_attributes(content)
       
+      # Pre-process code blocks to escape XML special characters
+      content = preprocess_code_blocks(content)
+      
       # Remove XML comments but preserve surrounding whitespace
       content = content.gsub(/(\s*)<!--.*?-->(\s*)/m) do |match|
         before_space = $1
@@ -50,8 +53,9 @@ module Poml
       # Convert HTML-style void elements to XML self-closing format
       content = preprocess_void_elements(content)
       
-      # Apply template substitutions
-      content = @template_engine.substitute(content)
+      # Apply safe template substitutions - only for simple string values
+      # This avoids XML parsing issues with complex values in attributes
+      content = @template_engine.safe_substitute(content)
 
       # Check if content is wrapped in <poml> tags and extract syntax
       content = content.strip
@@ -261,6 +265,51 @@ module Poml
       # Handle comparison operators in attribute values
       content = content.gsub(/(\w+\s*=\s*"[^"]*?)(<)([^"]*?")/m, '\1&lt;\3')
       content = content.gsub(/(\w+\s*=\s*"[^"]*?)(>)([^"]*?")/m, '\1&gt;\3')
+      
+      content
+    end
+
+    def preprocess_code_blocks(content)
+      # Escape XML special characters within <code> and <code-block> blocks to prevent XML parsing errors
+      # Use negative lookahead to avoid matching <code-block> when looking for <code>
+      content = content.gsub(/<code(?!-)[^>]*>(.*?)<\/code>/m) do |match|
+        full_match = match
+        opening_tag = full_match[/<code(?!-)[^>]*>/]
+        closing_tag = '</code>'
+        code_content = full_match.match(/<code(?!-)[^>]*>(.*?)<\/code>/m)[1]
+        
+        # Handle nil case
+        code_content ||= ''
+        
+        # Escape XML special characters in the code content
+        escaped_content = code_content.gsub('&', '&amp;')
+                                     .gsub('<', '&lt;')
+                                     .gsub('>', '&gt;')
+                                     .gsub('"', '&quot;')
+                                     .gsub("'", '&apos;')
+        
+        "#{opening_tag}#{escaped_content}#{closing_tag}"
+      end
+      
+      # Also handle <code-block> tags
+      content = content.gsub(/<code-block\b[^>]*>(.*?)<\/code-block>/m) do |match|
+        full_match = match
+        opening_tag = full_match[/<code-block\b[^>]*>/]
+        closing_tag = '</code-block>'
+        code_content = full_match.match(/<code-block\b[^>]*>(.*?)<\/code-block>/m)[1]
+        
+        # Handle nil case
+        code_content ||= ''
+        
+        # Escape XML special characters in the code content
+        escaped_content = code_content.gsub('&', '&amp;')
+                                     .gsub('<', '&lt;')
+                                     .gsub('>', '&gt;')
+                                     .gsub('"', '&quot;')
+                                     .gsub("'", '&apos;')
+        
+        "#{opening_tag}#{escaped_content}#{closing_tag}"
+      end
       
       content
     end

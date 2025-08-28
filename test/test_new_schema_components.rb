@@ -87,10 +87,10 @@ class TestNewSchemaComponents < Minitest::Test
     assert result['content'].include?('math operations')
     
     # Tool should be registered in metadata
-    assert result['metadata']['tools']
-    assert result['metadata']['tools'].is_a?(Array)
+    assert result['tools']
+    assert result['tools'].is_a?(Array)
     
-    tool = result['metadata']['tools'].first
+    tool = result['tools'].first
     assert_equal 'calculate', tool['name']
     assert_equal 'Perform calculations', tool['description']
     assert tool['schema']
@@ -121,8 +121,8 @@ class TestNewSchemaComponents < Minitest::Test
     assert result['content'].include?('Search for information')
     
     # Tool should be registered in metadata
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'search', tool['name']
     assert_equal 'Search for information', tool['description']
     # For eval parser, we store the raw expression
@@ -161,10 +161,10 @@ class TestNewSchemaComponents < Minitest::Test
     assert result['content'].include?('Assistant')
     
     # Both tools should be registered
-    assert result['metadata']['tools']
-    assert_equal 2, result['metadata']['tools'].length
+    assert result['tools']
+    assert_equal 2, result['tools'].length
     
-    tool_names = result['metadata']['tools'].map { |t| t['name'] }
+    tool_names = result['tools'].map { |t| t['name'] }
     assert_includes tool_names, 'calculate'
     assert_includes tool_names, 'search'
   end
@@ -221,8 +221,8 @@ class TestNewSchemaComponents < Minitest::Test
     assert result['content'].include?('Check the weather')
     
     # Tool should be registered in metadata
-    assert result['metadata']['tools']
-    tool = result['metadata']['tools'].first
+    assert result['tools']
+    tool = result['tools'].first
     assert_equal 'weather', tool['name']
     assert_equal 'Get weather info', tool['description']
   end

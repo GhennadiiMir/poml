@@ -15,8 +15,41 @@ module Poml
       end
     end
 
+    def safe_substitute(text)
+      return text unless text.is_a?(String)
+      
+      # Handle {{variable}} substitutions, but only substitute simple string values
+      # to avoid XML parsing issues with complex values in attributes
+      text.gsub(/\{\{(.+?)\}\}/) do |match|
+        expression = $1.strip
+        
+        # Check what type of value this expression would resolve to
+        # without actually evaluating it to string first
+        raw_value = evaluate_attribute_expression(expression)
+        
+        # Only substitute if:
+        # 1. The value exists (not nil)
+        # 2. The value is a simple type (string, number, boolean)
+        # Leave nil values and complex objects as template variables for component-level handling
+        case raw_value
+        when String, Numeric, TrueClass, FalseClass
+          raw_value.to_s
+        when NilClass
+          match # Keep {{...}} for nil values - they might be valid in child contexts
+        else
+          match # Return original {{...}} for complex values like arrays/hashes
+        end
+      end
+    end
+
     def evaluate_attribute_expression(expression)
       # Handle attribute expressions that might return non-string values
+      
+      # Handle string literals with quotes
+      if expression =~ /^"([^"]*)"$/ || expression =~ /^'([^']*)'$/
+        return $1  # Return the content without quotes
+      end
+      
       if expression =~ /^(\w+(?:\.\w+)*)\s*\+\s*(\d+)$/
         variable_path = $1
         increment = $2.to_i
@@ -51,6 +84,11 @@ module Poml
     def evaluate_expression(expression)
       # Handle dot notation and arithmetic expressions
       
+      # Handle string literals with quotes
+      if expression =~ /^"([^"]*)"$/ || expression =~ /^'([^']*)'$/
+        return $1  # Return the content without quotes
+      end
+      
       # Simple arithmetic operations like loop.index+1
       if expression =~ /^(\w+(?:\.\w+)*)\s*\+\s*(\d+)$/
         variable_path = $1
@@ -79,6 +117,22 @@ module Poml
     
     def evaluate_complex_expression(expression)
       # Handle more complex expressions like array literals, object access, etc.
+      
+      # Handle logical OR operator (||) - return first truthy value
+      if expression =~ /^(.+?)\s*\|\|\s*(.+)$/
+        left_expression = $1.strip
+        right_expression = $2.strip
+        
+        left_value = evaluate_expression(left_expression)
+        
+        # Return left value if it's truthy (not nil, false, or empty string)
+        if left_value && left_value != "" && left_value != false
+          return left_value
+        else
+          # Evaluate and return the right expression
+          return evaluate_expression(right_expression)
+        end
+      end
       
       # Try to parse as JSON first (for arrays and objects)
       begin
@@ -137,7 +191,7 @@ module Poml
     end
     
     def get_nested_variable(path)
-      # Handle dot notation like "loop.index"
+      # Handle dot notation like "loop.index" or "items.length"
       parts = path.split('.')
       
       # Handle both Context objects and raw variable hashes
@@ -152,6 +206,14 @@ module Poml
           value = value[part]
         elsif value.is_a?(Hash) && value.key?(part.to_sym)
           value = value[part.to_sym]
+        elsif value.respond_to?(part)
+          # Handle method calls like .length, .size, .count on arrays/strings
+          begin
+            value = value.send(part)
+          rescue => e
+            # If method call fails, return nil
+            return nil
+          end
         else
           return nil
         end
