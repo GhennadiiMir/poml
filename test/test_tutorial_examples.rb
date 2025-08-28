@@ -4,7 +4,8 @@ require "json"
 require "tempfile"
 
 class TutorialExamplesTest < Minitest::Test
-  # Tests that verify all examples from TUTORIAL.md work correctly
+  # Tests that verify all examples from the tutorial documentation work correctly
+  # Note: Tutorial moved to docs/tutorial/ structure for better organization
   
   def test_basic_usage_examples
     # From "Basic Usage" section

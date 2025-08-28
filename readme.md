@@ -39,7 +39,7 @@ Or add to your Gemfile:
 gem 'poml'
 ```
 
-After installation, check out [TUTORIAL.md](TUTORIAL.md) for comprehensive examples and integration patterns.
+After installation, check out the [comprehensive tutorial](docs/tutorial/index.md) for examples and integration patterns.
 
 ## Usage
 
@@ -70,7 +70,7 @@ result = Poml.process(markup: markup, stylesheet: stylesheet)
 result = Poml.process(markup: markup, chat: false)
 ```
 
-📖 **For comprehensive examples and advanced usage patterns, see [TUTORIAL.md](TUTORIAL.md)**
+📖 **For comprehensive examples and advanced usage patterns, see the [POML Tutorial](docs/tutorial/index.md)**
 
 #### Quick Reference - Common Patterns
 

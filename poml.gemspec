@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.files         = Dir[
     "lib/**/*.rb",
     "README.md", 
-    "TUTORIAL.md",
+    "docs/tutorial/**/*",
     "LICENSE.txt",
     "examples/**/*",
     "media/logo-*.png"
@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["documentation_uri"] = "#{spec.homepage}/blob/main/TUTORIAL.md"
+  spec.metadata["documentation_uri"] = "#{spec.homepage}/blob/main/docs/tutorial/index.md"
   spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
   spec.metadata["changelog_uri"] = "#{spec.homepage}/releases"
   spec.metadata["rubygems_mfa_required"] = "true"
