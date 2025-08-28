@@ -206,8 +206,9 @@ module Poml
           value = value[part]
         elsif value.is_a?(Hash) && value.key?(part.to_sym)
           value = value[part.to_sym]
-        elsif value.respond_to?(part)
-          # Handle method calls like .length, .size, .count on arrays/strings
+        elsif value.respond_to?(part) && (value.is_a?(Array) || value.is_a?(String))
+          # Handle method calls like .length, .size, .count on arrays/strings only
+          # Don't call methods on Hash objects to avoid conflicts with variable names
           begin
             value = value.send(part)
           rescue => e

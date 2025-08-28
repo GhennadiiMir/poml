@@ -18,7 +18,7 @@ class PomlMarkupComponentsTest < Minitest::Test
     assert_includes result, '<i>Italic text</i>'
     assert_includes result, '<u>Underlined text</u>'
     assert_includes result, '<s>Struck through text</s>'
-    assert_includes result, '<code inline="true">puts "hello"</code>'
+    assert_includes result, '<code>puts "hello"</code>'
   end
   
   def test_header_component

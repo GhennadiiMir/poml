@@ -20,11 +20,8 @@ module Poml
       else
         case @context.output_format
         when 'raw'
-          if @context.chat
-            ""  # Chat components don't render content in raw format when in chat mode
-          else
-            content
-          end
+          # In raw format, return content only if chat mode is disabled
+          @context.chat ? "" : content
         else
           content
         end
@@ -51,9 +48,10 @@ module Poml
       if xml_mode?
         render_as_xml('user-msg', content, { speaker: 'human' })
       else
-        # In raw format, chat components don't render content only when in chat mode
-        if @context.output_format == 'raw' && @context.chat
-          ""
+        case @context.output_format
+        when 'raw'
+          # In raw format, return content only if chat mode is disabled
+          @context.chat ? "" : content
         else
           content
         end
@@ -80,9 +78,10 @@ module Poml
       if xml_mode?
         render_as_xml('system-msg', content, { speaker: 'system' })
       else
-        # In raw format, chat components don't render content only when in chat mode
-        if @context.output_format == 'raw' && @context.chat
-          ""
+        case @context.output_format
+        when 'raw'
+          # In raw format, return content only if chat mode is disabled
+          @context.chat ? "" : content
         else
           content
         end

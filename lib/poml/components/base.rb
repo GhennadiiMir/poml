@@ -69,8 +69,15 @@ module Poml
       content ||= render_children
       attrs_str = attributes.map { |k, v| " #{k}=\"#{v}\"" }.join('')
       
+      # Check if this is an inline component that shouldn't have trailing newlines
+      is_inline_component = is_inline_component_name?(self.class.name.split('::').last)
+      
       if content.strip.empty?
-        "<#{tag_name}#{attrs_str}/>\n"
+        if is_inline_component
+          "<#{tag_name}#{attrs_str}/>"
+        else
+          "<#{tag_name}#{attrs_str}/>\n"
+        end
       else
         # Add line breaks for nice formatting
         if content.include?('<item>')
@@ -81,7 +88,11 @@ module Poml
           "<#{tag_name}#{attrs_str}>\n  #{indented_content}\n</#{tag_name}>\n"
         else
           # Simple content
-          "<#{tag_name}#{attrs_str}>#{content}</#{tag_name}>\n"
+          if is_inline_component
+            "<#{tag_name}#{attrs_str}>#{content}</#{tag_name}>"
+          else
+            "<#{tag_name}#{attrs_str}>#{content}</#{tag_name}>\n"
+          end
         end
       end
     end
@@ -230,6 +241,16 @@ module Poml
       ]
       
       component_class_name = component_class.name.split('::').last
+      inline_component_names.include?(component_class_name)
+    end
+    
+    def is_inline_component_name?(component_class_name)
+      # Check if the component class name is registered as inline
+      inline_component_names = %w[
+        BoldComponent ItalicComponent UnderlineComponent StrikethroughComponent 
+        CodeComponent InlineComponent
+      ]
+      
       inline_component_names.include?(component_class_name)
     end
   end

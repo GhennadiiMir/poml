@@ -96,28 +96,9 @@ module Poml
         [{ 'role' => 'user', 'content' => content }]
       end
       
-      # If no tools, return just messages array for compatibility with tests
-      if !@context.tools || @context.tools.empty?
-        return messages
-      end
-      
-      # If tools are present, return object with messages and tools
-      # Convert to OpenAI tool format
-      openai_tools = @context.tools.map do |tool|
-        {
-          'type' => 'function',
-          'function' => {
-            'name' => tool['name'],
-            'description' => tool['description'],
-            'parameters' => convert_to_openai_schema(tool)
-          }
-        }
-      end
-      
-      {
-        'messages' => messages,
-        'tools' => openai_tools
-      }
+      # openai_chat format always returns just the messages array
+      # Tools should be accessed via openaiResponse format instead
+      messages
     end
     
     def convert_to_openai_schema(tool)
@@ -171,8 +152,8 @@ module Poml
         'type' => 'assistant'
       }
       
-      # Include messages if chat components were used
-      if @context.respond_to?(:chat_messages) && !@context.chat_messages.empty?
+      # Include chat messages if available (for compatibility)
+      if @context.chat_messages && !@context.chat_messages.empty?
         response['messages'] = @context.chat_messages
       end
       
@@ -185,9 +166,18 @@ module Poml
       # Include custom metadata (title, description, etc.)
       metadata.merge!(@context.custom_metadata) if @context.custom_metadata && !@context.custom_metadata.empty?
       
+      # Include tools in metadata only if there are tools
+      metadata['tools'] = @context.tools if @context.tools && !@context.tools.empty?
+      
+      # Include schemas in metadata for backward compatibility
+      if @context.response_schema_with_metadata
+        metadata['schemas'] = [@context.response_schema_with_metadata]
+      end
+      
+      # Only include metadata if it has meaningful content
       response['metadata'] = metadata unless metadata.empty?
       
-      # Include tools at top level (matching updated structure)
+      # Include tools at top level (matching existing structure)
       response['tools'] = @context.tools && !@context.tools.empty? ? @context.tools : []
       
       response

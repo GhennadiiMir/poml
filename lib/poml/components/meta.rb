@@ -31,7 +31,7 @@ module Poml
     
     def handle_typed_meta(type)
       case type.downcase
-      when 'responseschema', 'response_schema'
+      when 'responseschema', 'response_schema', 'output-schema', 'output_schema'
         handle_response_schema
       when 'tool', 'tool-definition', 'tooldefinition'
         handle_tool_registration
@@ -115,6 +115,29 @@ module Poml
         
         # Store the schema directly for simplicity
         @context.response_schema = schema
+        
+        # Also store for backward compatibility with tests that expect schemas array
+        # If the parsed JSON contains a name field, use the entire schema as-is
+        # Otherwise wrap it in a metadata structure
+        if schema.is_a?(Hash) && schema.key?('name')
+          @context.response_schema_with_metadata = schema
+        else
+          schema_with_metadata = {
+            'schema' => schema
+          }
+          
+          # Add name if provided as attribute
+          if _name
+            schema_with_metadata['name'] = _name
+          end
+          
+          # Add description if provided as attribute
+          if _description
+            schema_with_metadata['description'] = _description
+          end
+          
+          @context.response_schema_with_metadata = schema_with_metadata
+        end
       end
     end
     

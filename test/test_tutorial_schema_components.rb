@@ -382,13 +382,16 @@ class TutorialSchemaComponentsTest < Minitest::Test
     # Test openaiResponse format (includes tools/schemas)
     response_result = Poml.process(markup: markup, format: 'openaiResponse')
     assert_kind_of Hash, response_result
-    assert response_result.key?('messages')
+    assert response_result.key?('content')
     assert response_result.key?('metadata')
     
-    # Should include schema and tool information
+    # Should include schema and tool information in metadata
     metadata = response_result['metadata']
     assert metadata.key?('schemas')
     assert metadata.key?('tools')
+    
+    # Should also have tools at top level
+    assert response_result.key?('tools')
   end
 
   def test_complex_nested_schema

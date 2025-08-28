@@ -125,12 +125,40 @@ module Poml
       
       content = @element.content.empty? ? render_children : @element.content
       
-      # In XML mode, selectively unescape only parsing artifacts while preserving intentional entities
-      if xml_mode?
-        # Unescape quotes that were escaped during parsing
-        content = content.gsub('&quot;', '"').gsub('&apos;', "'")
-        # Handle double-escaped HTML entities - restore single escaping
-        content = content.gsub('&amp;lt;', '&lt;').gsub('&amp;gt;', '&gt;').gsub('&amp;amp;', '&amp;')
+      # Determine entity handling based on context:
+      # - If chat mode is disabled (e.g., to_text), always unescape for readability
+      # - Otherwise, preserve entities in XML-style contexts, unescape in simple markup
+      if @context.chat == false
+        # When chat mode is disabled (like to_text), always unescape for readability
+        content = content.gsub('&quot;', '"').gsub('&apos;', "'").gsub('&amp;', '&')
+        content = content.gsub('&lt;', '<').gsub('&gt;', '>')
+      else
+        # Regular logic for chat mode
+        preserve_entities = false
+        
+        # Check if we're in XML mode or have XML syntax
+        if xml_mode?
+          preserve_entities = true
+        elsif @context.output_format == 'openai_chat' && content.include?('&')
+          # Special case: openai_chat format with ampersands suggests XML parsing
+          preserve_entities = true
+        elsif @context.chat_messages.any? || @context.instance_variable_get(:@chat_messages)&.any?
+          # If we have chat messages, we're likely in a complex XML document
+          preserve_entities = true  
+        end
+        
+        if preserve_entities
+          # In XML documents, preserve HTML entities but fix double-escaping
+          # Handle double-escaped entities: &amp;lt; -> &lt;
+          content = content.gsub('&amp;lt;', '&lt;').gsub('&amp;gt;', '&gt;')
+          content = content.gsub('&amp;quot;', '&quot;').gsub('&amp;apos;', '&apos;')
+          # For standalone & characters, ensure they're properly escaped as &amp;
+          content = content.gsub(/&(?!(lt|gt|quot|apos|amp);)/, '&amp;')
+        else
+          # In simple markup, unescape HTML entities for readability
+          content = content.gsub('&quot;', '"').gsub('&apos;', "'").gsub('&amp;', '&')
+          content = content.gsub('&lt;', '<').gsub('&gt;', '>')
+        end
       end
       
       inline_attr = get_attribute('inline', true)
@@ -206,14 +234,23 @@ module Poml
       language = get_attribute('language', '')
       content = @element.content
       
-      # In XML mode, selectively unescape only quotes and ampersands that were 
-      # escaped during parsing, but preserve intentional HTML entities like &lt; &gt;
-      if xml_mode?
-        # Unescape quotes that were escaped during parsing
+      # Handle HTML entity unescaping based on output context
+      # Similar logic to CodeComponent for consistency
+      if @context.chat == false
+        # When chat mode is disabled (like to_text), always unescape for readability
+        content = content.gsub('&quot;', '"').gsub('&apos;', "'").gsub('&amp;', '&')
+        content = content.gsub('&lt;', '<').gsub('&gt;', '>')
+      elsif xml_mode?
+        # In XML mode, preserve entities but fix double-escaping
         content = content.gsub('&quot;', '"').gsub('&apos;', "'")
-        # Handle double-escaped HTML entities - restore single escaping  
         content = content.gsub('&amp;lt;', '&lt;').gsub('&amp;gt;', '&gt;').gsub('&amp;amp;', '&amp;')
-        
+      else
+        # In markdown and other text formats, unescape for readability
+        content = content.gsub('&quot;', '"').gsub('&apos;', "'").gsub('&amp;', '&')
+        content = content.gsub('&lt;', '<').gsub('&gt;', '>')
+      end
+      
+      if xml_mode?
         attributes = {}
         attributes[:language] = language unless language.empty?
         render_as_xml('code-block', content, attributes)

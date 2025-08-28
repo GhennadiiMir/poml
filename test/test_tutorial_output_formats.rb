@@ -99,6 +99,13 @@ class TutorialOutputFormatsTest < Minitest::Test
     content = result['content']
     output = result['output']
     
+    # Debug output
+    puts "=== DEBUG OUTPUT ==="
+    puts "Output content:"
+    puts output.inspect
+    puts "Contains 'Always use HTTPS'? #{output.include?('Always use HTTPS')}"
+    puts "=== END DEBUG ==="
+    
     assert content.include?('Technical Writer')
     assert content.include?('API documentation')
     
