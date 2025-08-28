@@ -10,6 +10,7 @@ This tutorial provides detailed examples and practical use cases for using the P
 - [Stylesheets](#stylesheets)
 - [Working with Files](#working-with-files)
 - [Image Components](#image-components)
+- [Inline Rendering](#inline-rendering)
 - [Advanced Components](#advanced-components)
 - [Error Handling](#error-handling)
 - [Integration Examples](#integration-examples)
@@ -161,19 +162,69 @@ puts result['messages']  # Array of message objects
 puts result['content']   # Raw content string
 ```
 
-### Pydantic Format
+### OpenAI Response Format
 
-Returns a simplified structure with prompt and metadata:
+Perfect for AI model integration with standardized response structure:
 
 ```ruby
 require 'poml'
 
-markup = '<poml><role>Code Reviewer</role><task>Review Ruby code for best practices</task></poml>'
+markup = <<~POML
+  <poml>
+    <role>Data Analyst</role>
+    <task>Analyze the provided dataset and generate insights</task>
+    <schema name="AnalysisResult">
+    {
+      "type": "object",
+      "properties": {
+        "insights": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"type": "number"}
+      }
+    }
+    </schema>
+  </poml>
+POML
+
+result = Poml.process(markup: markup, format: 'openaiResponse')
+
+puts result['content']    # The formatted prompt content
+puts result['type']       # Response type
+puts result['metadata']   # Includes schemas, variables, tools, etc.
+```
+
+### Enhanced Pydantic Format
+
+Returns comprehensive structure with Python interoperability features:
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml>
+    <role>Code Reviewer</role>
+    <task>Review Ruby code for best practices</task>
+    <meta title="Code Review Session" author="AI Assistant"/>
+    <schema name="ReviewResult">
+    {
+      "type": "object",
+      "properties": {
+        "issues": {"type": "array", "items": {"type": "string"}},
+        "suggestions": {"type": "array", "items": {"type": "string"}},
+        "score": {"type": "integer", "minimum": 1, "maximum": 10}
+      }
+    }
+    </schema>
+  </poml>
+POML
+
 result = Poml.process(markup: markup, format: 'pydantic')
 
-puts result['prompt']        # The formatted prompt
-puts result['variables']     # Template variables used
-puts result['chat_enabled']  # Whether chat mode is enabled
+puts result['content']          # The formatted prompt
+puts result['variables']        # Template variables used
+puts result['chat_enabled']     # Whether chat mode is enabled
+puts result['schemas']          # Array of strict JSON schemas
+puts result['custom_metadata']  # Metadata from meta components
+puts result['metadata']         # Format metadata with Python compatibility info
 ```
 
 ## Template Variables
@@ -648,6 +699,112 @@ result2 = processor.process_with_caching(
 )
 
 puts "Results are identical: #{result1 == result2}"
+```
+
+## Inline Rendering
+
+The POML Ruby gem supports inline rendering for components, allowing them to render seamlessly within text flow without extra whitespace or line breaks.
+
+### Basic Inline Usage
+
+```ruby
+require 'poml'
+
+# Block mode (default) - adds newlines and spacing
+markup1 = <<~POML
+  <poml>
+    <p>The user wants to <b>emphasize</b> this word in the sentence.</p>
+  </poml>
+POML
+
+# Inline mode - seamless text flow
+markup2 = <<~POML
+  <poml>
+    <p>The user wants to <b inline="true">emphasize</b> this word in the sentence.</p>
+  </poml>
+POML
+
+result1 = Poml.process(markup: markup1, format: 'raw')
+result2 = Poml.process(markup: markup2, format: 'raw')
+
+puts "Block mode:"
+puts result1
+puts "\nInline mode:"
+puts result2
+```
+
+### Inline Tables and Data
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml>
+    <role>Data Analyst</role>
+    <p>The summary statistics are: <table inline="true" data='[{"metric": "avg", "value": 85.2}, {"metric": "max", "value": 97.8}]'></table> for this quarter.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup, format: 'raw')
+puts result
+```
+
+### Inline Code Examples
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml>
+    <role>Programming Tutor</role>
+    <p>Use the <code inline="true">Array#map</code> method to transform each element, or <code inline="true">Array#select</code> to filter elements.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup, format: 'raw')
+puts result
+```
+
+### Mixed Inline and Block Components
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml>
+    <role>Technical Writer</role>
+    <p>For configuration, you can use either <code inline="true">config.yml</code> or environment variables.</p>
+    
+    <p>Here's the complete configuration structure:</p>
+    <code>
+# config.yml
+database:
+  host: localhost
+  port: 5432
+    </code>
+    
+    <p>The <code inline="true">host</code> setting is required.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup, format: 'raw')
+puts result
+```
+
+### Inline Rendering in XML Mode
+
+```ruby
+require 'poml'
+
+markup = <<~POML
+  <poml syntax="xml">
+    <role>API Documentation Writer</role>
+    <p>The endpoint <code inline="true">GET /api/users</code> returns user data, while <code inline="true">POST /api/users</code> creates new users.</p>
+  </poml>
+POML
+
+result = Poml.process(markup: markup, format: 'raw')
+puts result
 ```
 
 ## Advanced Components

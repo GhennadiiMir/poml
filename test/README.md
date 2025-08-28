@@ -19,8 +19,8 @@ bundle exec ruby -I lib test/test_basic_functionality.rb
 
 ## Current Status
 
-- ✅ **123 stable tests** passing (11 test files, 590 assertions)
-- ⚠️ **112+ development tests** with expected failures for unimplemented features
+- ✅ **177 stable tests** passing (16 test files, 834 assertions)
+- ⚠️ **88+ development tests** with expected failures for unimplemented features
 - 🎯 **Test-driven development** approach with clear stable/development separation
 
 ## Test Organization

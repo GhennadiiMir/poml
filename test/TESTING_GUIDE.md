@@ -9,14 +9,14 @@ This is the comprehensive testing guide for the POML Ruby gem. It covers test ex
 **Stable Test Suite (Recommended for CI/CD)**:
 
 ```bash
-bundle exec rake test        # 123 tests, 590 assertions, 0 failures
+bundle exec rake test        # 177 tests, 834 assertions, 0 failures
 bundle exec rake             # Same as above (default task)
 ```
 
 **Development Test Suite**:
 
 ```bash
-bundle exec rake test_all    # 211+ tests, ~15+ failures (expected)
+bundle exec rake test_all    # 265+ tests, ~15+ failures (expected)
 ```
 
 **Individual Test Files**:
@@ -37,7 +37,7 @@ bundle exec ruby -I lib test/test_implemented_features.rb
 
 ### Test Status Summary
 
-**✅ Stable Tests**: 11 files, 123 tests, 590 assertions - **ALL PASSING**
+**✅ Stable Tests**: 16 files, 177 tests, 834 assertions - **ALL PASSING**
 
 - `test_basic_functionality.rb` - Core formatting and chat components
 - `test_implemented_features.rb` - Current working features  
@@ -51,7 +51,7 @@ bundle exec ruby -I lib test/test_implemented_features.rb
 - `test_new_schema_components.rb` - New schema components (output-schema, tool-definition)
 - `test_schema_compatibility.rb` - Schema backward compatibility
 
-**⚠️ Development Tests**: 8 additional files with unimplemented features
+**⚠️ Development Tests**: 88+ additional tests with unimplemented features
 
 - `test_chat_components.rb` - Advanced chat features
 - `test_error_handling.rb` - Comprehensive error scenarios  
@@ -220,9 +220,9 @@ bundle exec ruby -I lib test/test_template_engine.rb --verbose
 ### Using Rake Tasks
 
 ```bash
-bundle exec rake test           # Stable tests only (99 tests)
+bundle exec rake test           # Stable tests only (177 tests)
 bundle exec rake test_working   # Same as above (legacy alias)
-bundle exec rake test_all       # All tests including failing ones (211+ tests)
+bundle exec rake test_all       # All tests including failing ones (265+ tests)
 bundle exec rake                # Default task (same as rake test)
 ```
 
@@ -327,15 +327,15 @@ ls test/fixtures/
 
 ### Current Performance
 
-- **Stable test suite**: ~0.05 seconds (123 tests, 590 assertions)
-- **Full test suite**: ~0.1 seconds (235+ tests)
+- **Stable test suite**: ~0.06 seconds (177 tests, 834 assertions)
+- **Full test suite**: ~0.12 seconds (265+ tests)
 - **Individual test files**: Usually < 0.01 seconds
 
 ### Test Statistics
 
-- **Total test files**: 19 (11 stable + 8 development)
-- **Stable tests**: 123 tests, 590 assertions, 0 failures
-- **Development tests**: 112+ additional tests (~15+ failures expected)
+- **Total test files**: 23 (16 stable + 7 development)
+- **Stable tests**: 177 tests, 834 assertions, 0 failures
+- **Development tests**: 88+ additional tests (~15+ failures expected)
 - **Coverage**: Comprehensive coverage of all implemented features
 
 ### Monitoring
@@ -359,5 +359,5 @@ For detailed feature implementation status, see [ROADMAP.md](../ROADMAP.md).
 
 ---
 
-**Last Updated**: December 10, 2024 - Schema Components and Backward Compatibility Testing Complete  
+**Last Updated**: August 28, 2025 - Synchronization Complete with v0.0.7  
 **Next Review**: When new major features are implemented or test organization changes

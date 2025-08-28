@@ -4,11 +4,11 @@ A Ruby implementation of the POML (Prompt Oriented Markup Language) interpreter.
 
 ## About This Implementation
 
-This is a **Ruby port** of the original [POML library](https://github.com/microsoft/poml) developed by Microsoft, which was originally implemented in JavaScript/TypeScript and Python. This Ruby gem is designed to be **fully compatible** with the original POML specification and will **closely follow** the development of the original library to maintain feature parity.
+This is a **Ruby port** of the original [POML library](https://github.com/microsoft/poml) developed by Microsoft, which was originally implemented in JavaScript/TypeScript and Python. This Ruby gem is designed to be **fully compatible** with the original POML specification and has been **synchronized with version 0.0.9** of the original library to maintain complete feature parity.
 
-> **🔄 Recent Update**: The original POML library has introduced **breaking changes** in schema definitions. Schema attributes have been renamed from `lang` to `parser` (e.g., `lang="json"` → `parser="json"`, `lang="expr"` → `parser="eval"`). Our Ruby implementation is being updated to maintain compatibility with these changes.
+> **✅ Synchronization Complete**: The Ruby implementation is now fully aligned with the original POML library v0.0.9, including all recent enhancements for image URL support, inline rendering, enhanced file operations, and improved Python interoperability.
 
-## Demo Video
+## Demo Video (for original library)
 
 [![The 5-minute guide to POML](https://i3.ytimg.com/vi/b9WDcFsKixo/maxresdefault.jpg)](https://youtu.be/b9WDcFsKixo)
 
@@ -114,12 +114,13 @@ poml markup.poml --format raw
 
 ### CLI Options
 
-- `-f, --format FORMAT`: Output format (raw, dict, openai_chat, langchain, pydantic)
+- `-f, --format FORMAT`: Output format (raw, dict, openai_chat, openaiResponse, langchain, pydantic)
   - `raw`: Plain text output with message boundaries (like `===== system =====`)
   - `dict`: JSON object with content and metadata
   - `openai_chat`: Array of messages in OpenAI Chat Completion API format
+  - `openaiResponse`: Standardized AI response structure with content, type, and metadata
   - `langchain`: Object with both messages array and raw content
-  - `pydantic`: Simplified object structure with prompt, variables, and settings
+  - `pydantic`: Enhanced Python interoperability with strict JSON schema support
 - `-c, --context JSON`: Context variables as JSON
 - `--no-chat`: Disable chat mode
 - `-s, --stylesheet JSON`: Stylesheet as JSON
@@ -197,18 +198,21 @@ Customize component appearance:
 
 ## Features
 
-- ✅ Full POML component support
-- ✅ Template variable substitution
-- ✅ Multiple output formats (raw, dict, OpenAI chat, etc.)
-- ✅ Document inclusion (.txt, .docx, .pdf)
+- ✅ Full POML component support with comprehensive test coverage (177 tests, 834 assertions)
+- ✅ Template variable substitution with conditional logic and loops
+- ✅ Multiple output formats (raw, dict, openai_chat, openaiResponse, langchain, pydantic)
+- ✅ Document inclusion (.txt, .docx, .pdf) with robust encoding support
 - ✅ **Image handling with URL support** (HTTP/HTTPS fetching, base64 encoding, local files)
-- ✅ Table data processing
-- ✅ XML syntax mode
-- ✅ Stylesheet support
-- ✅ Command-line interface
-- ✅ Chat vs non-chat modes
-- 🔄 **Schema definitions** (updating to new `parser` attribute syntax)
-- 🔄 **Tool registration** (updating for enhanced tool use support)
+- ✅ **Inline rendering support** - Components can render inline for seamless text flow
+- ✅ **Enhanced file operations** - UTF-8 encoding with international file name support (Chinese, Arabic, etc.)
+- ✅ **Enhanced Pydantic integration** - Python interoperability with strict JSON schema validation
+- ✅ Table data processing from CSV, JSON, and JSONL sources
+- ✅ XML syntax mode with full component compatibility
+- ✅ Stylesheet support for component customization
+- ✅ Command-line interface with comprehensive options
+- ✅ Chat vs non-chat modes for different use cases
+- ✅ **Schema definitions** - Full support for both legacy `lang` and new `parser` attribute syntax
+- ✅ **Tool registration** - Enhanced tool definition capabilities with multiple formats
 
 ## Document Support
 
