@@ -59,8 +59,9 @@ module Poml
       
       begin
         parsed = JSON.parse(substituted_content)
-        # Return the parsed schema directly - don't wrap it
-        parsed
+        # Apply enhanced tool registration features
+        enhanced_schema = apply_tool_enhancements(parsed)
+        enhanced_schema
       rescue JSON::ParserError => e
         raise Poml::Error, "Invalid JSON schema for tool '#{get_attribute('name')}': #{e.message}"
       end
@@ -76,8 +77,9 @@ module Poml
         # otherwise treat it as a placeholder
         if substituted_content.strip.start_with?('{', '[')
           parsed = JSON.parse(substituted_content)
-          # Return the parsed schema directly - don't wrap it
-          parsed
+          # Apply enhanced tool registration features
+          enhanced_schema = apply_tool_enhancements(parsed)
+          enhanced_schema
         else
           # This would need a JavaScript engine in a real implementation
           # For now, return a placeholder that indicates expression evaluation
@@ -93,6 +95,98 @@ module Poml
           "_note" => "Expression evaluation not implemented in Ruby gem"
         }
       end
+    end
+    
+    # Apply enhanced tool registration features
+    def apply_tool_enhancements(schema)
+      return schema unless schema.is_a?(Hash)
+      
+      # Apply parameter key conversion and runtime type conversion
+      enhanced_schema = convert_parameter_keys(schema)
+      enhanced_schema = apply_runtime_parameter_conversion(enhanced_schema)
+      enhanced_schema
+    end
+    
+    # Convert kebab-case keys to camelCase recursively
+    def convert_parameter_keys(obj)
+      case obj
+      when Hash
+        converted = {}
+        obj.each do |key, value|
+          # Convert kebab-case to camelCase
+          new_key = kebab_to_camel_case(key.to_s)
+          
+          # Special handling for 'required' array
+          if key == 'required' && value.is_a?(Array)
+            converted[new_key] = value.map { |req_key| kebab_to_camel_case(req_key.to_s) }
+          else
+            converted[new_key] = convert_parameter_keys(value)
+          end
+        end
+        converted
+      when Array
+        obj.map { |item| convert_parameter_keys(item) }
+      else
+        obj
+      end
+    end
+    
+    # Convert kebab-case string to camelCase
+    def kebab_to_camel_case(str)
+      # Split on hyphens and convert to camelCase
+      parts = str.split('-')
+      return str if parts.length == 1  # No conversion needed
+      
+      parts[0] + parts[1..-1].map(&:capitalize).join
+    end
+    
+    # Apply runtime parameter type conversion
+    def apply_runtime_parameter_conversion(schema)
+      return schema unless schema.is_a?(Hash)
+      
+      converted = schema.dup
+      
+      # Process properties if they exist
+      if converted['properties'].is_a?(Hash)
+        converted['properties'] = converted['properties'].map do |key, prop|
+          [key, convert_property_value(prop)]
+        end.to_h
+      end
+      
+      converted
+    end
+    
+    # Convert individual property values based on 'convert' attribute
+    def convert_property_value(property)
+      return property unless property.is_a?(Hash) && property['convert']
+      
+      converted_prop = property.dup
+      convert_value = property['convert']
+      prop_type = property['type']
+      
+      begin
+        case prop_type
+        when 'boolean'
+          # Convert various truthy/falsy values to boolean
+          case convert_value.to_s.downcase
+          when 'true', '1', 'yes', 'on'
+            # Keep the convert attribute for now but could be removed
+          when 'false', '0', 'no', 'off'
+            # Keep the convert attribute for now but could be removed
+          end
+        when 'number'
+          # Validate that the value can be converted to a number
+          Float(convert_value) # This will raise an exception if invalid
+        when 'object', 'array'
+          # Validate that the value is valid JSON
+          JSON.parse(convert_value) # This will raise an exception if invalid
+        end
+      rescue StandardError
+        # If conversion fails, remove the convert attribute silently
+        converted_prop.delete('convert')
+      end
+      
+      converted_prop
     end
   end
 end

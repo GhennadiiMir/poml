@@ -33,7 +33,7 @@ module Poml
       case type.downcase
       when 'responseschema', 'response_schema'
         handle_response_schema
-      when 'tool'
+      when 'tool', 'tool-definition', 'tooldefinition'
         handle_tool_registration
       when 'runtime'
         handle_runtime_parameters
@@ -143,6 +143,11 @@ module Poml
         nil
       end
       
+      # Apply enhanced tool registration features
+      if schema
+        schema = apply_tool_enhancements(schema)
+      end
+      
       if schema
         @context.tools ||= []
         
@@ -150,10 +155,14 @@ module Poml
         if name
           tool_def = {
             'name' => name,
-            'description' => description
+            'description' => description,
+            'schema' => schema.is_a?(String) ? schema : JSON.generate(schema)
           }
-          # Merge in the parsed schema (should include parameters, etc.)
-          tool_def.merge!(schema) if schema.is_a?(Hash)
+          
+          # Merge in the parsed schema for backward compatibility
+          if schema.is_a?(Hash)
+            tool_def.merge!(schema)
+          end
         elsif schema.is_a?(Hash) && schema['name']
           # If the schema contains the full tool definition, use it directly
           tool_def = schema
@@ -188,6 +197,11 @@ module Poml
         evaluate_expression_schema(content)
       else
         nil
+      end
+      
+      # Apply enhanced tool registration features
+      if schema
+        schema = apply_tool_enhancements(schema)
       end
       
       if schema
@@ -311,6 +325,98 @@ module Poml
           @context.disabled_components.add(component_name)
         end
       end
+    end
+    
+    # Apply enhanced tool registration features
+    def apply_tool_enhancements(schema)
+      return schema unless schema.is_a?(Hash)
+      
+      # Apply parameter key conversion and runtime type conversion
+      enhanced_schema = convert_parameter_keys(schema)
+      enhanced_schema = apply_runtime_parameter_conversion(enhanced_schema)
+      enhanced_schema
+    end
+    
+    # Convert kebab-case keys to camelCase recursively
+    def convert_parameter_keys(obj)
+      case obj
+      when Hash
+        converted = {}
+        obj.each do |key, value|
+          # Convert kebab-case to camelCase
+          new_key = kebab_to_camel_case(key.to_s)
+          
+          # Special handling for 'required' array
+          if key == 'required' && value.is_a?(Array)
+            converted[new_key] = value.map { |req_key| kebab_to_camel_case(req_key.to_s) }
+          else
+            converted[new_key] = convert_parameter_keys(value)
+          end
+        end
+        converted
+      when Array
+        obj.map { |item| convert_parameter_keys(item) }
+      else
+        obj
+      end
+    end
+    
+    # Convert kebab-case string to camelCase
+    def kebab_to_camel_case(str)
+      # Split on hyphens and convert to camelCase
+      parts = str.split('-')
+      return str if parts.length == 1  # No conversion needed
+      
+      parts[0] + parts[1..-1].map(&:capitalize).join
+    end
+    
+    # Apply runtime parameter type conversion
+    def apply_runtime_parameter_conversion(schema)
+      return schema unless schema.is_a?(Hash)
+      
+      converted = schema.dup
+      
+      # Process properties if they exist
+      if converted['properties'].is_a?(Hash)
+        converted['properties'] = converted['properties'].map do |key, prop|
+          [key, convert_property_value(prop)]
+        end.to_h
+      end
+      
+      converted
+    end
+    
+    # Convert individual property values based on 'convert' attribute
+    def convert_property_value(property)
+      return property unless property.is_a?(Hash) && property['convert']
+      
+      converted_prop = property.dup
+      convert_value = property['convert']
+      prop_type = property['type']
+      
+      begin
+        case prop_type
+        when 'boolean'
+          # Convert various truthy/falsy values to boolean
+          case convert_value.to_s.downcase
+          when 'true', '1', 'yes', 'on'
+            # Keep the convert attribute for now but could be removed
+          when 'false', '0', 'no', 'off'
+            # Keep the convert attribute for now but could be removed
+          end
+        when 'number'
+          # Validate that the value can be converted to a number
+          Float(convert_value) # This will raise an exception if invalid
+        when 'object', 'array'
+          # Validate that the value is valid JSON
+          JSON.parse(convert_value) # This will raise an exception if invalid
+        end
+      rescue StandardError
+        # If conversion fails, remove the convert attribute silently
+        converted_prop.delete('convert')
+      end
+      
+      converted_prop
     end
   end
 end

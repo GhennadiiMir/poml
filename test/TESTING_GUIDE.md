@@ -9,16 +9,32 @@ This is the complete testing documentation for the POML Ruby gem. It covers test
 **All Tests (Recommended)**:
 
 ```bash
-bundle exec rake test        # 285 tests, 1526 assertions, 0 failures
+bundle exec rake test        # 303 tests, 1681 assertions, 0 failures
 bundle exec rake             # Same as above (default task)
 ```
 
-**Legacy Aliases (Same as above)**:
+**Alternative Test Runner**:
 
 ```bash
-bundle exec rake test_all    # 285 tests, 0 failures (ALL TESTS PASSING)
+bundle exec ruby test/run_all_tests.rb  # Same results, different runner
+```
+
+**Legacy Aliases (Same as rake test)**:
+
+```bash
+bundle exec rake test_all    # 303 tests, 0 failures (ALL TESTS PASSING)
 bundle exec rake test_working # Same as rake test
 ```
+
+### Why Use `rake test` Instead of `run_all_tests.rb`?
+
+While both commands run all tests and produce identical results, **`bundle exec rake test` is the recommended approach** because:
+
+1. **Standard Ruby Convention**: Rake is the standard task runner for Ruby projects
+2. **Better Integration**: Rake tasks integrate better with CI/CD systems and IDEs
+3. **Enhanced Options**: Rake provides additional test running options (verbose mode, warnings, etc.)
+4. **Gemspec Integration**: Aligns with Ruby gem development best practices
+5. **Discoverability**: `rake -T` shows available tasks, making the interface more discoverable
 
 **Individual Test Files**:
 
@@ -32,13 +48,18 @@ bundle exec ruby -I lib test/test_template_engine.rb
 # Schema components
 bundle exec ruby -I lib test/test_new_schema_components.rb
 
+# Enhanced tool registration features
+bundle exec ruby -I lib test/test_enhanced_tool_registration.rb
+
 # Data components
 bundle exec ruby -I lib test/test_data_components.rb
 ```
 
 ## Current Status
 
-**✅ Complete Test Coverage**: 285 tests, 1526 assertions - **ALL TESTS PASSING**
+**✅ Complete Test Coverage**: 303 tests, 1681 assertions - **ALL TESTS PASSING**
+
+*Recent Enhancement*: Added comprehensive tool registration enhancement tests with 4 new test cases covering schema storage consistency, mixed key formats, deep nesting, and component parity.
 
 ### Test Organization
 
@@ -77,6 +98,7 @@ test/
 **Schema and Integration**
 
 - `test_new_schema_components.rb` - Schema components (output-schema, tool-definition)
+- `test_enhanced_tool_registration.rb` - Enhanced tool registration features (runtime conversion, key conversion)
 - `test_schema_compatibility.rb` - Schema backward compatibility
 - `test_openai_response_format.rb` - OpenAI response format
 - `test_pydantic_integration.rb` - Python interoperability
