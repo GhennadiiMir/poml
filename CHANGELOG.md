@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2025-08-29
+
 ### Breaking Changes
 
 - **Tools Structure Change**: Moved tools from `result['metadata']['tools']` to `result['tools']` to align with original POML library structure
