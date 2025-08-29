@@ -203,6 +203,11 @@ module Poml
       
       # Recursively process templates in children
       element.children.each do |child|
+        # For text elements, process their content directly
+        if child.tag_name == :text && child.content && child.content.include?('{{')
+          child.content = context.template_engine.substitute(child.content)
+        end
+        
         process_templates_in_element(child, context)
       end
     end

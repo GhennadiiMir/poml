@@ -494,7 +494,7 @@ class TutorialSchemaComponentsTest < Minitest::Test
     assert result['content'].include?('Test invalid schema')
     
     # Schema may be omitted or marked as invalid
-    schemas = result['metadata']['schemas'] || []
+    _schemas = result['metadata']['schemas'] || []
     # Implementation may vary on how it handles invalid schemas
   end
 end

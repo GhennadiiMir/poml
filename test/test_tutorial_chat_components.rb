@@ -94,13 +94,6 @@ class TutorialChatComponentsTest < Minitest::Test
 
     result = Poml.process(markup: markup, format: 'openai_chat')
     
-    # Debug output
-    puts "=== DEBUG ==="
-    puts "Result class: #{result.class}"
-    puts "Result length: #{result.length}"
-    puts "Result: #{result.inspect}"
-    puts "=== END DEBUG ==="
-    
     assert_kind_of Array, result
     assert_equal 3, result.length
     

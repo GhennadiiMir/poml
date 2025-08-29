@@ -23,21 +23,30 @@ module Poml
       text.gsub(/\{\{(.+?)\}\}/) do |match|
         expression = $1.strip
         
-        # Check what type of value this expression would resolve to
-        # without actually evaluating it to string first
-        raw_value = evaluate_attribute_expression(expression)
-        
-        # Only substitute if:
-        # 1. The value exists (not nil)
-        # 2. The value is a simple type (string, number, boolean)
-        # Leave nil values and complex objects as template variables for component-level handling
-        case raw_value
-        when String, Numeric, TrueClass, FalseClass
-          raw_value.to_s
-        when NilClass
-          match # Keep {{...}} for nil values - they might be valid in child contexts
+        # Don't substitute complex expressions (comparisons, ternary operators, etc.)
+        # These should be handled during rendering when variables are in proper scope
+        if expression.include?('==') || expression.include?('!=') || 
+           expression.include?('>=') || expression.include?('<=') || 
+           expression.include?('>') || expression.include?('<') ||
+           expression.include?('?') || expression.include?(':')
+          match # Keep {{...}} for complex expressions
         else
-          match # Return original {{...}} for complex values like arrays/hashes
+          # Check what type of value this expression would resolve to
+          # without actually evaluating it to string first
+          raw_value = evaluate_attribute_expression(expression)
+          
+          # Only substitute if:
+          # 1. The value exists (not nil)
+          # 2. The value is a simple type (string, number, boolean)
+          # Leave nil values and complex objects as template variables for component-level handling
+          case raw_value
+          when String, Numeric, TrueClass, FalseClass
+            raw_value.to_s
+          when NilClass
+            match # Keep {{...}} for nil values - they might be valid in child contexts
+          else
+            match # Return original {{...}} for complex values like arrays/hashes
+          end
         end
       end
     end
@@ -166,27 +175,80 @@ module Poml
         
         condition_result = evaluate_condition(condition)
         if condition_result
-          evaluate_expression(true_value)
+          return evaluate_expression(true_value)
         else
-          evaluate_expression(false_value)
+          return evaluate_expression(false_value)
         end
+      end
+      
+      # Handle comparison operations as standalone expressions
+      if expression =~ /^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/
+        condition_result = evaluate_condition(expression)
+        return condition_result
       end
       
       nil
     end
     
     def evaluate_condition(condition)
-      # Simple condition evaluation
-      case condition
-      when 'true'
-        true
-      when 'false'
-        false
-      when /^!(.+)$/
-        !evaluate_condition($1.strip)
+      # Handle comparison operations
+      if condition =~ /^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/
+        left_operand = $1.strip
+        operator = $2.strip
+        right_operand = $3.strip
+        
+        # Evaluate operands
+        left_value = evaluate_operand(left_operand)
+        right_value = evaluate_operand(right_operand)
+        
+        # Perform comparison
+        case operator
+        when '=='
+          left_value == right_value
+        when '!='
+          left_value != right_value
+        when '>='
+          left_value >= right_value if left_value.respond_to?(:>=)
+        when '<='
+          left_value <= right_value if left_value.respond_to?(:<=)
+        when '>'
+          left_value > right_value if left_value.respond_to?(:>)
+        when '<'
+          left_value < right_value if left_value.respond_to?(:<)
+        else
+          false
+        end
       else
-        value = get_nested_variable(condition)
-        !!value
+        # Simple condition evaluation
+        case condition
+        when 'true'
+          true
+        when 'false'
+          false
+        when /^!(.+)$/
+          !evaluate_condition($1.strip)
+        else
+          value = get_nested_variable(condition)
+          !!value
+        end
+      end
+    end
+    
+    def evaluate_operand(operand)
+      # Handle string literals with quotes
+      if operand =~ /^"([^"]*)"$/ || operand =~ /^'([^']*)'$/
+        return $1
+      elsif operand =~ /^-?\d+$/
+        return operand.to_i
+      elsif operand =~ /^-?\d*\.\d+$/
+        return operand.to_f
+      elsif operand == 'true'
+        return true
+      elsif operand == 'false'
+        return false
+      else
+        # Variable lookup
+        get_nested_variable(operand)
       end
     end
     
@@ -211,7 +273,7 @@ module Poml
           # Don't call methods on Hash objects to avoid conflicts with variable names
           begin
             value = value.send(part)
-          rescue => e
+          rescue
             # If method call fails, return nil
             return nil
           end

@@ -4,7 +4,8 @@ module Poml
     def render
       # If there are child elements, render them; otherwise return the content
       if @element.children.empty?
-        @element.content
+        # Apply template substitution to text content
+        @context.template_engine.substitute(@element.content)
       else
         render_children
       end
@@ -18,6 +19,11 @@ module Poml
       
       tag_name = @element.tag_name.to_s
       content = @element.children.empty? ? @element.content : render_children
+      
+      # Apply template substitution to content
+      if content.is_a?(String)
+        content = @context.template_engine.substitute(content)
+      end
       
       if xml_mode?
         # In XML mode, preserve the original tag

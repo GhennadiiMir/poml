@@ -27,7 +27,29 @@ module Poml
         parse_records_attribute(data_attr)
       elsif @element.children.any? { |child| child.tag_name == :tr || child.tag_name == :thead || child.tag_name == :tbody || child.tag_name == :tfoot }
         # Handle HTML-style table markup
-        if @context.output_format == 'html' || xml_mode?
+        
+        # Check if any children contain for loops - if so, use normal rendering
+        has_for_loops = @element.children.any? { |child| contains_for_loops?(child) }
+        
+        if has_for_loops
+          # When for loops are present, use normal child rendering instead of table parsing
+          # This allows for loops to be processed normally
+          # Set output format to HTML temporarily so tr/td elements render as HTML
+          original_format = @context.output_format
+          @context.output_format = 'html'
+          
+          children_content = render_children
+          
+          # Restore original format
+          @context.output_format = original_format
+          
+          # For raw format, convert HTML table to markdown table
+          if original_format == 'raw'
+            return convert_html_table_to_markdown(children_content)
+          else
+            return children_content
+          end
+        elsif @context.output_format == 'html' || xml_mode?
           # In HTML or XML mode, render children directly to preserve nested components
           children_content = render_children
           if xml_mode?
@@ -253,6 +275,53 @@ module Poml
       end
       
       tr_elements
+    end
+    
+    def contains_for_loops?(element)
+      # Check if this element or any of its children contain for loops
+      return true if element.tag_name == :for
+      
+      element.children.any? { |child| contains_for_loops?(child) }
+    end
+    
+    def convert_html_table_to_markdown(html_content)
+      # Simple HTML table to markdown conversion
+      # This is a basic implementation - can be enhanced as needed
+      
+      # Extract table rows from HTML
+      rows = []
+      html_content.scan(/<tr[^>]*>(.*?)<\/tr>/m) do |row_match|
+        row_content = row_match[0]
+        cells = []
+        row_content.scan(/<t[hd][^>]*>(.*?)<\/t[hd]>/m) do |cell_match|
+          cell_text = cell_match[0].strip
+          # Remove HTML tags from cell content
+          cell_text = cell_text.gsub(/<[^>]+>/, '')
+          cells << cell_text
+        end
+        rows << cells unless cells.empty?
+      end
+      
+      return '' if rows.empty?
+      
+      # Convert to markdown table
+      if rows.length == 1
+        # Only data rows, create a simple header
+        header_row = rows[0].map.with_index { |_, i| "Column #{i + 1}" }
+        rows.unshift(header_row)
+      end
+      
+      # Build markdown table
+      result = []
+      rows.each_with_index do |row, index|
+        result << "| #{row.join(' | ')} |"
+        if index == 0
+          # Add separator row after header
+          result << "| #{row.map { '---' }.join(' | ')} |"
+        end
+      end
+      
+      result.join("\n")
     end
     
     def apply_selection(data, selected_columns, selected_records, max_records, max_columns)

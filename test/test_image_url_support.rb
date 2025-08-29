@@ -1,4 +1,5 @@
 require_relative 'test_helper'
+require 'base64'
 
 class TestImageUrlSupport < Minitest::Test
   include TestHelper
@@ -178,33 +179,26 @@ class TestImageUrlSupport < Minitest::Test
   end
 
   def create_temp_image_file(filename)
-    # Create a minimal PNG file (1x1 transparent pixel)
-    png_data = [
-      "\x89PNG\r\n\x1A\n",  # PNG signature
-      "\x00\x00\x00\rIHDR",  # IHDR chunk
-      "\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1F\x15\xC4\x89",  # 1x1 RGBA
-      "\x00\x00\x00\nIDATx\x9Cc\xF8\x00\x00\x00\x01\x00\x01",  # Minimal IDAT
-      "\x02\x1A\xD3\xFF\x00\x00\x00\x00IEND\xAEB`\x82"  # IEND chunk
-    ].join.b
+    # Use libvips to create a proper test image if available, otherwise use minimal PNG
+    begin
+      require 'vips'
+      # Create a simple 1x1 white pixel image
+      image = Vips::Image.black(1, 1) + 255
+      image.write_to_file(filename)
+    rescue LoadError
+      # Fallback to hardcoded valid PNG data
+      # This is a valid 1x1 white pixel PNG (same as the base64 test)
+      png_data = Base64.decode64('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg==')
+      File.write(filename, png_data, mode: 'wb')
+    end
     
-    File.write(filename, png_data, mode: 'wb')
     @temp_files ||= []
     @temp_files << filename
   end
 
   def create_temp_image_file_at(path)
-    # Same as above but for specific path
-    png_data = [
-      "\x89PNG\r\n\x1A\n",
-      "\x00\x00\x00\rIHDR",
-      "\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1F\x15\xC4\x89",
-      "\x00\x00\x00\nIDATx\x9Cc\xF8\x00\x00\x00\x01\x00\x01",
-      "\x02\x1A\xD3\xFF\x00\x00\x00\x00IEND\xAEB`\x82"
-    ].join.b
-    
-    File.write(path, png_data, mode: 'wb')
-    @temp_files ||= []
-    @temp_files << path
+    # Use the same method
+    create_temp_image_file(path)
   end
 
   def create_temp_directory
@@ -231,8 +225,8 @@ class TestImageUrlSupport < Minitest::Test
   def create_mock_http_response
     # This would be used for actual HTTP mocking if we implement it
     {
-      code: '200',
-      body: "\x89PNG\r\n\x1A\n".b,  # PNG header
+      'code' => '200',
+      'body' => "\x89PNG\r\n\x1A\n".b,  # PNG header
       'content-type' => 'image/png'
     }
   end

@@ -93,7 +93,7 @@ module Poml
           # Clean up the JSON content - remove extra whitespace and normalize
           cleaned_content = content.gsub(/\n\s*/, ' ').gsub(/\s+/, ' ')
           example['parameters'] = JSON.parse(cleaned_content)
-        rescue JSON::ParserError => e
+        rescue JSON::ParserError
           # If JSON parsing fails, try to clean it up more aggressively
           begin
             # Replace problematic characters and try again
