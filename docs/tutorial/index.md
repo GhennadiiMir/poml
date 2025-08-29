@@ -13,9 +13,9 @@ POML is a markup language designed for creating structured, reusable AI prompts.
 The Ruby POML gem uses a **format-aware rendering system**:
 
 - **Default rendering**: Produces Markdown-like output optimized for readability
-- **HTML components**: Use `<output format="html"/>` for HTML output (`<h1>`, `<b>`, `<i>` tags)
-- **JSON/XML formats**: Use `<output format="json"/>` or `<output format="xml"/>` for structured data
-- **Text format**: Use `<output format="text"/>` for plain text output
+- **HTML components**: Use `<output format="html">content</output>` for HTML output (`<h1>`, `<b>`, `<i>` tags)
+- **JSON/XML formats**: Use `<output format="json">content</output>` or `<output format="xml">content</output>` for structured data
+- **Text format**: Use `<output format="text">content</output>` for plain text output
 
 **Example - Getting HTML Output:**
 
@@ -23,9 +23,10 @@ The Ruby POML gem uses a **format-aware rendering system**:
 markup = <<~POML
   <poml>
     <role>Documentation Writer</role>
-    <h1>Main Title</h1>
-    <p>Content with <b>bold</b> and <i>italic</i> text.</p>
-    <output format="html"/>
+    <output format="html">
+      <h1>Main Title</h1>
+      <p>Content with <b>bold</b> and <i>italic</i> text.</p>
+    </output>
   </poml>
 POML
 

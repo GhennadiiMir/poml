@@ -19,7 +19,7 @@ Control the **overall structure** of the result (API format):
 
 ### 2. Content Rendering Formats
 
-Control how **components render** within the content using `<output format="..."/>`:
+Control how **components render** within the content using `<output format="...">content</output>`:
 
 - `format="markdown"` - Markdown syntax (default): `# Header`, `**bold**`
 - `format="html"` - HTML tags: `<h1>Header</h1>`, `<b>bold</b>`
@@ -33,9 +33,10 @@ Control how **components render** within the content using `<output format="..."
 markup = <<~POML
   <poml>
     <role>Writer</role>
-    <h1>Article Title</h1>
-    <p>Content with <b>emphasis</b></p>
-    <output format="html"/>  <!-- Content format -->
+    <output format="html">
+      <h1>Article Title</h1>
+      <p>Content with <b>emphasis</b></p>
+    </output>
   </poml>
 POML
 

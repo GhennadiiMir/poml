@@ -650,16 +650,16 @@ class SafeToolProcessor
       valid_tools = tools.select { |tool| valid_tool?(tool) }
       
       {
-        success: true,
-        tools: valid_tools,
-        invalid_count: tools.length - valid_tools.length
+        'success' => true,
+        'tools' => valid_tools,
+        'invalid_count' => tools.length - valid_tools.length
       }
       
     rescue StandardError => e
       {
-        success: false,
-        error: e.message,
-        tools: []
+        'success' => false,
+        'error' => e.message,
+        'tools' => []
       }
     end
   end
@@ -676,10 +676,10 @@ end
 
 # Usage
 result = SafeToolProcessor.process_tools(markup, context)
-if result[:success]
-  puts "Processed #{result[:tools].length} valid tools"
+if result['success']
+  puts "Processed #{result['tools'].length} valid tools"
 else
-  puts "Error: #{result[:error]}"
+  puts "Error: #{result['error']}"
 end
 ```
 

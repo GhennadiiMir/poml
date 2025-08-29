@@ -33,9 +33,10 @@ Text with **bold** and *italic* formatting.
 ```ruby
 markup = <<~POML
   <poml>
-    <h1>Main Title</h1>
-    <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
-    <output format="html"/>
+    <output format="html">
+      <h1>Main Title</h1>
+      <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
+    </output>
   </poml>
 POML
 
@@ -55,9 +56,10 @@ puts result['output']
 ```ruby
 markup = <<~POML
   <poml>
-    <h1>Main Title</h1>
-    <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
-    <output format="text"/>
+    <output format="text">
+      <h1>Main Title</h1>
+      <p>Text with <b>bold</b> and <i>italic</i> formatting.</p>
+    </output>
   </poml>
 POML
 
@@ -68,9 +70,7 @@ puts result['output']
 **Output:**
 
 ```text
-Main Title
-
-Text with bold and italic formatting.
+# Main TitleText with **bold** and *italic* formatting.
 ```
 
 ## Text Formatting
