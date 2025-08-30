@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "poml"
-  spec.version       = "0.0.7"
+  spec.version       = "0.0.8"
   spec.authors       = ["Ghennadii Mirosnicenco"]
   spec.email         = ["linkator7@gmail.com"]
 
@@ -43,4 +43,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rexml", "~> 3.2"
   spec.add_dependency "rubyzip", "~> 2.3"
   spec.add_dependency "ruby-vips", "~> 2.1"
+  spec.add_dependency "csv", "~> 3.0"
+  spec.add_dependency "base64", "~> 0.1"
+  spec.add_dependency "net-http", "~> 0.3"
+  spec.add_dependency "uri", "~> 0.12"
 end

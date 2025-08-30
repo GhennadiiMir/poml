@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.8] - 2025-08-30
+
+### Added
+
+- **Ruby 3.4.0+ Compatibility**: Added missing standard library dependencies
+  - `csv` (~> 3.0) - Required for table component functionality
+  - `base64` (~> 0.1) - Required for image URL support and base64 encoding
+  - `net-http` (~> 0.3) - Required for HTTP requests in data components
+  - `uri` (~> 0.12) - Required for URL parsing in data components
+
+### Fixed
+
+- **Dependency Management**: Resolved LoadError issues when using the gem with Ruby 3.4.0+
+- **Test Suite Compatibility**: All 400 tests now pass without dependency warnings
+
 ## [0.0.7] - 2025-08-29
 
 ### Added

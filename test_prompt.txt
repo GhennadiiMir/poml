@@ -1,0 +1,10 @@
+<poml>
+  <stylesheet>
+    {
+      "p": {
+        "syntax": "json"
+      }
+    }
+  </stylesheet>
+  <p>This text will be rendered as JSON.</p>
+</poml>
